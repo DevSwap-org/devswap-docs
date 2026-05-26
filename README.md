@@ -11,6 +11,21 @@
 - 🛡️ Full audit notes: [SECURITY-AUDIT.md](SECURITY-AUDIT.md)
 - 🏛️ Governance roadmap: [GOVERNANCE.md](GOVERNANCE.md)
 
+### 📚 What's in these docs
+
+| Section | What's inside |
+|---|---|
+| **[Whitepaper](whitepaper.md)** | Protocol thesis, settlement model, fee structure, utility token role |
+| **[Architecture overview](ARCHITECTURE.md)** | High-level system map: web → contracts → subgraph → keeper |
+| **[Smart contracts](CONTRACTS.md)** | Contract list, function surface, state model, event signatures |
+| **[Tokenomics](TOKENOMICS.md)** | $DSWP supply, vesting, buyback-and-burn flow, treasury accounting |
+| **[Dispute resolution (V2.4)](DISPUTE-RESOLUTION.md)** | 3-arbiter panel voting, dynamic deposits, pull-payment claims |
+| **[Trust & incentives](TRUST-AND-INCENTIVES.md)** | Reputation, Sybil resistance, why the system stays honest |
+| **[Security policy](SECURITY.md)** + **[Security audit](SECURITY-AUDIT.md)** | Threat model, SWC posture, automated-gate evidence |
+| **[Governance roadmap](GOVERNANCE.md)** | G0 → G4 decentralization path (immutable floors documented) |
+| **[Runbook](RUNBOOK.md)** | Operational playbook — deploy, monitor, recover |
+| **[ADRs](adr/)** | Architecture decision records — every irreversible choice and why |
+
 ---
 
 ## 1. Protocol Security — first principle
@@ -49,7 +64,29 @@ surface — these are documented in detail in [SECURITY-AUDIT §9](SECURITY-AUDI
 
 ---
 
-## 3. How the settlement protocol works
+## 3. What's new — V2.4 dispute panel (Cycle 10, 2026-05-26)
+
+V2.4 replaces the single-arbiter dispute path with a **3-arbiter consensus panel**:
+
+| Property | V2.2 (prior) | V2.4 (current) |
+|---|---|---|
+| Arbiter selection | Owner-curated allowlist | Stake-weighted random draw from `DevSwapArbiterPool` |
+| Dispute deposit | Flat 5 USDT | Dynamic — `clamp(amount × 3%, [15, 150] USDT)` |
+| Resolution | One arbiter's call | 2/3 majority (auto-finalize) or post-window settle |
+| Payouts | Direct push to winner | Pull-payment (`claimArbiterReward` / `claimWinnerDeposit`) |
+| Arbiter accountability | None on missed votes | 5% stake slash on missed vote within the 7-day window |
+
+**Verified on BSC testnet (chainId 97):**
+- `DevSwapEscrowV2_4`: [`0xa1aF0da1494Db38924fC2055B9deA79B8b376F47`](https://testnet.bscscan.com/address/0xa1af0da1494db38924fc2055b9dea79b8b376f47)
+- `DevSwapArbiterPool`: [`0x747A7a306F12Fce896F08e9A62a7ef83f1d53C95`](https://testnet.bscscan.com/address/0x747a7a306f12fce896f08e9a62a7ef83f1d53c95)
+
+Full design in [DISPUTE-RESOLUTION.md](DISPUTE-RESOLUTION.md) and
+[ADR-0013](adr/ADR-0013-arbiter-staking.md). Audit details in
+[SECURITY-AUDIT §11](SECURITY-AUDIT.md).
+
+---
+
+## 4. How the settlement protocol works
 
 | Step | Actor | Effect |
 |------|-------|--------|
@@ -76,7 +113,7 @@ to a reserve for later bulk burn, so a developer's payout is **never** blocked b
 
 ---
 
-## 4. Protocol Utility Token
+## 5. Protocol Utility Token
 
 The protocol utility token is a capped ERC-20 (max supply: 100,000,000) used exclusively by the
 buyback-and-burn mechanism and (in the future) by decentralized governance. It is **not** a payment
@@ -91,7 +128,7 @@ from the application only through the server-rendered disclosure interstitial de
 
 ---
 
-## 5. Decentralized Governance Roadmap
+## 6. Decentralized Governance Roadmap
 
 DevSwap Protocol's long-term goal is to be **ungovernable by any single party**, including its
 original contributors. The transition follows four phases (G0 → G4), documented in detail in
@@ -112,7 +149,7 @@ closes the puppet-arbiter attack class. Full list in [GOVERNANCE.md §5.4](GOVER
 
 ---
 
-## 6. Technical Stack — public references
+## 7. Technical Stack — public references
 
 - **Smart contracts:** Solidity 0.8.24 (Foundry), OpenZeppelin v5 (vendored — reproducible builds).
 - **Settlement asset:** USDT on BNB Smart Chain (BEP-20, 18 decimals — distinct from Ethereum's 6).
@@ -126,7 +163,7 @@ builds: the OpenZeppelin v5 dependency is vendored at a pinned commit hash.
 
 ---
 
-## 7. Trust & Verification — what to check
+## 8. Trust & Verification — what to check
 
 - **Non-custodial:** the smart contract is the actor that moves funds — not the protocol operators.
 - **Verifiable on-chain:** every fund flow is an on-chain event with a transaction hash; the
@@ -138,7 +175,7 @@ builds: the OpenZeppelin v5 dependency is vendored at a pinned commit hash.
 
 ---
 
-## 8. FAQ
+## 9. FAQ
 
 **Do I need an account to browse?** No — read-only browsing is open globally; connect a wallet only
 when you want to fund or accept work (these routes are subject to the §2 geo-restrictions).
