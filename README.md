@@ -1,85 +1,162 @@
-# DevSwap — Documentation
+# DevSwap Protocol — Documentation
 
-Public documentation for [**DevSwap**](https://devswap.pro), an on‑chain freelance marketplace on
-**BNB Smart Chain** where the budget is locked in USDT and released by a smart contract on the
-client's approval — no platform custody, no middleman.
+> A **Security-Hardened Protocol** for on-chain software-services settlement. Funds are locked in a
+> verified smart contract, released only on the client's explicit approval (or via deterministic
+> on-chain dispute and timeout rules). Non-custodial by design; no middleman, no platform escrow.
 
-- 🌐 App: **https://devswap.pro**
-- 📜 Contracts: **https://github.com/DevSwap-org/devswap-contracts**
+- 🌐 Application: **https://devswap.pro**
+- 📜 Contracts (public source): **https://github.com/DevSwap-org/devswap-contracts**
 - 🔐 Security policy: **https://github.com/DevSwap-org/.github/blob/main/SECURITY.md**
+- 🛡️ Full audit notes: [SECURITY-AUDIT.md](SECURITY-AUDIT.md)
+- 🏛️ Governance roadmap: [GOVERNANCE.md](GOVERNANCE.md)
 
 ---
 
-## How it works
-1. **Lock** — the client creates a task and funds it; USDT is locked in the smart contract.
-2. **Accept & deliver** — a developer accepts the task and submits the work (proof on IPFS / GitHub).
-3. **Release** — the client approves → the contract **releases funds automatically** to the developer.
-   If something goes wrong, either party can open a **transparent dispute**; a submit‑timeout protects
-   against an unresponsive party.
+## 1. Protocol Security — first principle
 
-Task states: `Open → Accepted → Submitted → Released` (terminal) · `Cancelled` (returns funds to the
-client) · `Disputed` (frozen pending resolution).
+DevSwap Protocol's path to a production deployment is gated by **independent verification, not by
+any token offering**. The protocol is operating in testnet today; the public mainnet release is
+gated by the **seven Security Gates** documented below.
 
-## Economics
-On successful release the locked USDT splits, enforced by the contract:
+| # | Gate | Type | Status |
+|---|---|---|---|
+| 1 | Symbolic execution (Mythril) — CI hard gate | Automated | ✅ wired |
+| 2 | Pattern analysis (Slither) — 0 high · 0 medium findings | Automated | ✅ green |
+| 3 | Test coverage — Escrow + Token 100% lines / statements / branches / functions | Automated | ✅ green |
+| 4 | Test suite — unit · fuzz @ 10,000 runs · invariant · mainnet-fork (79+ tests) | Automated | ✅ green |
+| 5 | Independent third-party audit (e.g., PeckShield / CertiK) | Manual | ⏳ pending |
+| 6 | Multisig 3-of-5 (hardware wallets) + Zodiac timelock (48–72h) | Manual | ⏳ pending |
+| 7 | Qualified-counsel review of disclosure copy + jurisdiction posture | Manual | ⏳ pending |
+
+The four automated gates are enforced on every commit to `main` in the public contracts repository.
+The three manual gates are protocol-maintainer actions required before any mainnet launch.
+
+---
+
+## 2. P0 + P1 Legal-Safety Controls — live today
+
+Two layers of protocol-level safety controls are in force today across every DevSwap Protocol
+surface — these are documented in detail in [SECURITY-AUDIT §9](SECURITY-AUDIT.md):
+
+- **Geo-restriction (RFC 7725 / HTTP 451).** Requests from United States persons and from
+  OFAC-sanctioned jurisdictions (Cuba, Iran, North Korea, Syria, Russia, Belarus) are blocked
+  from funding routes and any token-related disclosure pages, returning an inline bilingual
+  status-451 response.
+- **Server-rendered disclosure interstitial.** Any external link referencing the protocol utility
+  token is routed through a server-rendered page with a strict host allowlist (prevents
+  open-redirect abuse) and an explicit utility-token disclosure in both supported locales.
+
+---
+
+## 3. How the settlement protocol works
+
+| Step | Actor | Effect |
+|------|-------|--------|
+| 1. Lock | Client | Creates a task and funds it; USDT is locked in the smart contract. |
+| 2. Accept | Developer | Designated developer accepts the task and (later) submits the deliverable. |
+| 3. Release | Client | Approves the delivery → the smart contract releases 97% to the developer atomically. |
+| 4. Dispute / timeout | Either party | Transparent on-chain dispute path; deterministic timeout fallback. |
+
+Task lifecycle states: `Open → Accepted → Submitted → Released` (terminal) ·
+`Cancelled` (returns funds to client) · `Disputed` (resolved by arbitration policy).
+
+### 3.1 Economics — contract-enforced, not policy
 
 | Share | Recipient |
 |---:|---|
 | **97%** | Developer |
-| **1.5%** | Platform fee |
-| **1.5%** | `$DSWP` community **buyback‑and‑burn** |
+| **1.5%** | Protocol operations |
+| **1.5%** | Buyback-and-burn of the protocol utility token |
 
-Total fee: **3%**. The 1.5% buyback swaps to `$DSWP` and burns it (reducing supply); a failed swap is
-deferred to a reserve for a later bulk burn, so a developer's payout is **never** blocked.
-
-## `$DSWP` token
-ERC‑20, **capped at 100,000,000**, burnable, `Ownable2Step`. A **utility** token used by the
-buyback‑and‑burn mechanism. No price, yield, or return is promised — `$DSWP` is not an investment.
-
-### `$DSWP` on BSC mainnet
-The `$DSWP` ERC‑20 token contract is deployed on BNB Smart Chain mainnet. The marketplace
-itself is still on **testnet** (see the top of this page); the token contract on mainnet is independent
-of the marketplace and exists for the buyback‑and‑burn mechanism and (future) community governance.
-
-- **Token contract (mainnet):** [`0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9`](https://bscscan.com/token/0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9) — BscScan
-
-`$DSWP` is a utility token. No price, yield, revenue share, or return is promised. It is not an
-investment product.
-
-**No active token sale.** Any previously linked third‑party sale page has been removed pending
-qualified‑counsel review. The DevSwap interface displays a server‑rendered interstitial
-disclosure before any external $DSWP‑related link is followed, and US persons + OFAC‑sanctioned
-jurisdictions (Cuba, Iran, North Korea, Syria, Russia, Belarus) are geo‑blocked from
-token‑related and funding routes (HTTP 451 — see [SECURITY-AUDIT §9](SECURITY-AUDIT.md#9-legal-safety-controls-2026-05-26)).
-
-## Network & technical facts
-- **USDT on BSC has 18 decimals** (≠ Ethereum's 6) — amounts are computed in integer wei.
-- BSC mainnet `chainId 56` · testnet `chainId 97` · PancakeSwap V2 router for the buyback swap.
-- Stack: Solidity 0.8.24 (Foundry) · Next.js 14 on **Cloudflare Workers** (OpenNext) · wagmi/viem ·
-  RainbowKit · The Graph subgraph · IPFS metadata · bilingual EN/AR (RTL).
-
-## Trust & safety
-- **Non‑custodial**: the smart contract holds and moves funds — not the platform.
-- Contracts are tested (unit + fuzz + invariant + mainnet‑fork) and statically analyzed; a third‑party
-  audit is required before any mainnet launch with real funds.
-- Source is public for verification (`devswap-contracts`) and contracts are verified on BscScan.
-
-## Further documentation
-
-- **[SECURITY-AUDIT.md](SECURITY-AUDIT.md)** — internal security audit notes for the smart contracts
-  (Phase 1 + V2.1 + V2.2): tooling results (forge, slither, coverage), findings, and the P5
-  pre‑mainnet checklist (independent audit + multisig + timelock + LP lock).
-- **[GOVERNANCE.md](GOVERNANCE.md)** — decentralisation & DAO governance roadmap (G0 → G4): what
-  the DAO will govern, the three timelock tiers, and the immutable floors no governance vote can
-  touch (≥ 97% developer share, ≤ 3% total fee, dispute snapshot rule, etc.).
-
-## FAQ
-**Do I need an account to browse?** No — browsing is free; connect a wallet only to fund or accept work.
-**Who holds my money?** The smart contract, until you approve the delivery. The platform cannot move it.
-**What are the fees?** 3% total (1.5% platform + 1.5% buyback‑burn); the developer receives 97%.
-**Which networks?** Marketplace live on BNB Smart Chain **testnet** today; `$DSWP` token deployed on **mainnet**.
+Total fee: **3%**, enforced in contract bytecode (the 97% developer floor and 3% total ceiling are
+**immutable** — no governance vote can change them; see [GOVERNANCE.md §5.4](GOVERNANCE.md)). The
+buyback-and-burn segment swaps to the protocol utility token and burns it; a failed swap is deferred
+to a reserve for later bulk burn, so a developer's payout is **never** blocked by market conditions.
 
 ---
 
-> Status: marketplace on **testnet**, `$DSWP` token on **mainnet**. Nothing here is financial advice.
-> License: [MIT](LICENSE).
+## 4. Protocol Utility Token
+
+The protocol utility token is a capped ERC-20 (max supply: 100,000,000) used exclusively by the
+buyback-and-burn mechanism and (in the future) by decentralized governance. It is **not** a payment
+asset, not an investment instrument, and not a claim on protocol revenue.
+
+**No price, yield, dividend, revenue share, or return is promised.** There is no active token sale
+on or facilitated by the DevSwap Protocol interface; any prior third-party offering surface has
+been removed pending qualified-counsel review.
+
+The verified token contract address is available on the project's official BscScan listing, surfaced
+from the application only through the server-rendered disclosure interstitial described in §2.
+
+---
+
+## 5. Decentralized Governance Roadmap
+
+DevSwap Protocol's long-term goal is to be **ungovernable by any single party**, including its
+original contributors. The transition follows four phases (G0 → G4), documented in detail in
+[GOVERNANCE.md](GOVERNANCE.md):
+
+| Phase | What | Status |
+|-------|------|--------|
+| G0 | Owner-controlled testnet — current state | Today |
+| G1 | Mainnet launch behind 3-of-5 multisig + 48h timelock | Pending Security Gates 5 + 6 |
+| G2 | Protocol utility token gains `ERC20Votes` (snapshot-based voting power) | Future |
+| G3 | DAO Governor + three-tier timelock (48h / 7d / 14d) controls parameter changes | Future |
+| G4 | Guardian-veto sunset; no single entity has special on-chain power | ≥ 12 months post-G3, by community supermajority |
+
+Several **immutable floors** are enforced at the Solidity level — no governance vote, even at
+maximum supermajority, can change them: the ≥ 97% developer share, the ≤ 3% total fee ceiling, the
+ReentrancyGuard pattern on every state-mutating function, and the per-dispute snapshot rule that
+closes the puppet-arbiter attack class. Full list in [GOVERNANCE.md §5.4](GOVERNANCE.md).
+
+---
+
+## 6. Technical Stack — public references
+
+- **Smart contracts:** Solidity 0.8.24 (Foundry), OpenZeppelin v5 (vendored — reproducible builds).
+- **Settlement asset:** USDT on BNB Smart Chain (BEP-20, 18 decimals — distinct from Ethereum's 6).
+- **DEX integration:** PancakeSwap V2 router (for the buyback-and-burn mechanism).
+- **Network identifiers:** BNB Smart Chain mainnet `chainId 56` · testnet `chainId 97`.
+- **Application stack:** Next.js on Cloudflare Workers (OpenNext), wagmi / viem, RainbowKit, IPFS
+  metadata, bilingual EN / AR with full RTL support.
+
+The contracts repository (`devswap-contracts`) is public and verified on BscScan. Reproducible
+builds: the OpenZeppelin v5 dependency is vendored at a pinned commit hash.
+
+---
+
+## 7. Trust & Verification — what to check
+
+- **Non-custodial:** the smart contract is the actor that moves funds — not the protocol operators.
+- **Verifiable on-chain:** every fund flow is an on-chain event with a transaction hash; the
+  subgraph indexes every state transition for transparent third-party verification.
+- **Reproducible audit:** tooling outputs (forge coverage, Slither, Mythril CI) are reproducible
+  from the public contracts repository.
+- **Public verification:** the contracts are source-verified on BscScan; readers should consult the
+  verified source directly rather than trusting any link.
+
+---
+
+## 8. FAQ
+
+**Do I need an account to browse?** No — read-only browsing is open globally; connect a wallet only
+when you want to fund or accept work (these routes are subject to the §2 geo-restrictions).
+
+**Who holds my funds?** The smart contract, until your explicit approval or until a dispute /
+timeout rule fires. The protocol operators have no key that can move client funds outside the
+documented contract paths.
+
+**What are the fees?** 3% total, split 1.5% protocol operations + 1.5% buyback-and-burn; the
+developer receives 97%. These shares are immutable in contract bytecode (see §3.1).
+
+**Which networks?** Marketplace is live on BNB Smart Chain **testnet** (chainId 97). Mainnet
+deployment is gated by the seven Security Gates in §1.
+
+**Is there a token sale?** **No.** See §4 and [SECURITY-AUDIT §9](SECURITY-AUDIT.md).
+
+**Where can I read the security audit?** Right here: [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
+
+---
+
+> **Status:** Security-Hardened Protocol on testnet. Nothing in this document is financial advice
+> or a solicitation. License: [MIT](LICENSE).
