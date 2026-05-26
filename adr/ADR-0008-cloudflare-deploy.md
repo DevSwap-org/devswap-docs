@@ -1,9 +1,9 @@
 # ADR-0008 — Switch Deploy Target: Vercel → Cloudflare Workers (OpenNext)
 
-- **Status:** Accepted (owner-directed 2026-05-23 — "الآن تحوّل بالكامل إلى cloudflare")
+- **Status:** Accepted
 - **Date:** 2026-05-23
-- **Relates:** supersedes the Vercel deploy path in STATE.md / global CLAUDE.md §G for this project;
-  runbook `docs/CLOUDFLARE-DEPLOY.md`; workflow `.github/workflows/cloudflare-deploy.yml`.
+- **Relates:** supersedes the Vercel deploy path; runbook `docs/CLOUDFLARE-DEPLOY.md`; workflow
+  `.github/workflows/cloudflare-deploy.yml`.
 
 ## Context
 

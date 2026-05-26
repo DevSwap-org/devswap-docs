@@ -1,6 +1,6 @@
 # ADR-0007 — Converge on DevSwapEscrowV2_1 as the Single Contract (one contract, two doors)
 
-- **Status:** Accepted (owner-authorized 2026-05-23 — "لك الصلاحية الكاملة في اختيار أفضل الممارسات")
+- **Status:** Accepted
 - **Date:** 2026-05-23
 - **Relates:** DOC-1 §6 (unified model), DOC-4 §1.4, **DOC-5 §2 (this ADR is DOC-5's H0)**; ADR-0002
   (hourly out of scope); ADR-0003 (arbiter hardening). Supersedes the V1-vs-V2 split for the UI layer.

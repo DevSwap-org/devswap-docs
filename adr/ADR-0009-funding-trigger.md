@@ -1,14 +1,12 @@
 # ADR-0009 — Funding model: client-selected commitment mode (hybrid: Full / 10% deposit / On-accept)
 
-- **Status:** **Accepted** — owner chose the hybrid 3-mode model (2026-05-24, «ايه خليها هجين … اختر أفضل
-  الممارسات»). Two operational sub-decisions are flagged **tunable** below (recommended defaults given).
-  Contract code is **not yet written** — implementation is the next stream (TDD), this ADR is its spec.
+- **Status:** **Accepted** — the hybrid 3-mode model was selected. Two operational sub-decisions
+  are flagged **tunable** below (recommended defaults given).
 - **Date:** 2026-05-24 (supersedes the Proposed A/B/C draft of this ADR)
 - **Relates:** ADR-0007 (converge on V2.1 — refines its *funding trigger*), ADR-0002 (milestone-only —
-  carried forward, no hourly), ADR-0003 (arbiter), DOC-4 Stage 4, DOC-5 §3/§5, DOC-6 §C.1/§D.3.2;
-  CLAUDE.md §17/§18 + project rules (security-first, TDD).
-- **Trigger:** owner observation — *«ما أعتقد أن أحداً يريد أن يقفل أمواله إلى أن يجيه مطوّر»* → owner
-  decision to let the **client choose** how much to lock at post time.
+  carried forward, no hourly), ADR-0003 (arbiter).
+- **Trigger:** clients should not have to lock capital before a developer commits — let the client
+  choose how much to lock at post time.
 
 ## Context (grounded in the live contract)
 
@@ -51,7 +49,7 @@ POST  (door D, mode M)
                                               └─ M=OnAccept: lock 0%
   │   ── client may CANCEL anytime here → return the full locked amount, no penalty ──
   ▼
-DEVELOPER APPROVAL  (موافقة المطور)
+DEVELOPER APPROVAL
   ├─ D=Gig : developer confirms the order      (or instant, if owner enables instant-order)
   └─ D=Open: the client-selected developer accepts the offer
   ▼
@@ -71,7 +69,7 @@ only once 100% is locked. The modes change *when* the lock completes relative to
 work start unfunded. *(This resolves defect #1 — the client only locks early if they choose to, and can
 always cancel before a developer commits.)*
 
-## Best practices chosen (the «اختر أفضل الممارسات» part)
+## Best practices chosen
 
 1. **Smart default per door.** Gig door defaults to **Full** (it's an instant purchase, Fiverr-style);
    Open-Job door defaults to **Deposit-10%** (serious signal without full lock). Client can override.
@@ -93,8 +91,7 @@ always cancel before a developer commits.)*
 7. **Allowance UX.** For modes 2/3 the client `approve`s a USDT allowance up front (approval ≠ transfer); the
    top-up/fund transfer is **client-initiated** at completion (no developer-triggered pull of client funds —
    the safer choice; the funding window + reputation counter handle client inaction).
-8. **Plain-language, §18-safe copy** at the mode selector and on the badges (en/ar), routed through
-   `design:ux-copy`; `design:accessibility-review` before any UI merge.
+8. **Plain-language, legal-safe copy** at the mode selector and on the badges (EN/AR).
 
 ## Consequences
 
@@ -133,14 +130,14 @@ always cancel before a developer commits.)*
    locked amount; deposit top-up completes; top-up/fund **flake → expire → return + counter++**; **no-sniping**
    (only the intended dev approves); reentrancy on every transfer path; **fuzz** the 10% rounding (18-dec);
    **invariant** solvency across all modes; double-approval & cancel-after-approval rejected.
-3. **Frontend (en/ar, §18-safe; `design:ux-copy` + a11y review):** mode selector at post with trade-off copy;
+3. **Frontend (EN/AR, legal-safe + a11y reviewed):** mode selector at post with trade-off copy;
    developer-facing trust badges in Explore; cancel-before-approval action; top-up flow (modes 2/3);
-   reputation display incl. `commitmentsAbandoned`. **Proposed microcopy:**
-   - mode 1 — **en:** "Lock the full amount now — fastest acceptance." · **ar:** «اقفل المبلغ كاملاً الآن — أسرع قبول.»
-   - mode 2 — **en:** "Lock a 10% good-faith deposit — shows you're serious." · **ar:** «اقفل عربون جدّية 10٪ — يُظهر جدّيتك.»
-   - mode 3 — **en:** "Lock nothing until your developer accepts." · **ar:** «لا تقفل شيئاً حتى يقبل مطوّرك.»
-   - cancel — **en:** "Cancel anytime before your developer accepts — your USDT returns in full." · **ar:** «ألغِ في أي وقت قبل قبول المطوّر — تعود أموالك كاملةً.»
-   (No custody/guarantee/refund/escrow/«مضمون/ة»; the smart contract is the actor — §18.)
+   reputation display incl. `commitmentsAbandoned`. **Proposed microcopy (EN; AR localized in app):**
+   - mode 1 — "Lock the full amount now — fastest acceptance."
+   - mode 2 — "Lock a 10% good-faith deposit — shows you're serious."
+   - mode 3 — "Lock nothing until your developer accepts."
+   - cancel — "Cancel anytime before your developer accepts — your USDT returns in full."
+   (No custody/guarantee/refund verbs in user-facing copy — the smart contract is the actor.)
 4. **Docs + gates:** update the docs listed above; `forge build/test/coverage`, slither clean, en+ar
    screenshots (§16), §17 fee + §18 legal CI green; independent audit before any mainnet (P5).
 

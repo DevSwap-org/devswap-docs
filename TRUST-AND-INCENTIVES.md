@@ -30,32 +30,7 @@
 
 ---
 
-## الخلاصة التنفيذية (بالعربية)
-
-نظام DevSwap لامركزي وغير حافظ للأموال — وهذا يعيد تشكيل كل سؤال هنا: **لا نملك** أن نحجز المال رهينة، ولا
-أن نحكم في النزاع بأنفسنا، ولا أن نضمن "أن هذا مطوّر حقيقي". لذا الحلّ في كل محور ليس "سلطة مركزية" بل
-**حوافز اقتصادية + شفافية على السلسلة + لامركزية تدريجية**:
-
-- **المحكّمون:** وجودهم يُضمَن بـ(سياسة ≥3 محكّمين الآن) ← (حوافز + stake لجذب مجمّع محكّمين لاحقاً) ← (مخرج
-  آمن «لا تجمّد للأبد» عند غيابهم). يُكافأ المحكّم من **رسم نزاع يدفعه الخاسر** — **لا** من الـ97% النظيفة
-  للمطوّر في المسار العادي. عقاب المطوّر المخطئ = خسارة مرحلة النزاع + عدّاد `disputesLost` العلني (لا
-  مصادرة لأموال خارج الضمان — مستحيل بنيوياً). حماية المطوّر من ابتزاز العميل = **تأمين نزاع** يخسره العميل
-  المخطئ + عدّاد سمعة + تبريد + حكم جزئي.
-- **التواصل ومنع التسرّب:** الحقيقة الصريحة — في نموذج غير حافظ **لا يمكن منع التسرّب تماماً**. الاستراتيجية
-  الواقعية = **جعل المسار داخل المنصّة هو المهيمن** عبر *جزرات* (الضمان + حماية النزاع + السمعة المنقولة
-  موجودة **فقط** داخل المنصّة) لا *عصِيّ* (حجب الاتصال/الحظر = مسرح ضعيف). محادثة داخلية مرتبطة بالمراحل +
-  تبادل ملفات عبر IPFS مع **بصمة على السلسلة كدليل نزاع**.
-- **العملة:** بعد إطلاقها، طلبٌ حقيقي عبر **مصارف استهلاكية** (المطوّر يدفع `$DSWP` لرفع ظهوره، العميل يدفع
-  لرفع أولوية طلبه) — بشرط أن يكون الرفع **مضاعِفاً على الجدارة لا بديلاً عنها** (مُعلَّم «مُموَّل»، مسقوف،
-  أرضية سمعة)، و**باقة مجانية دائمة كاملة الصلاحيات**. المصروف يُحرَق آلياً (لا يُسوَّق الحرق كعائد أبداً).
-- **التحقق:** طبقات لامركزية — ربط محفظة↔GitHub (موجود) + بوابة بشرية (Human Passport) + **سجلّ العمل على
-  السلسلة (الأقوى، موجود)** كشهادات EAS + (اختياري) **شهادة مدعومة بـstake** يُقصّ منها المُصدِّق إن ثبت
-  احتيال المطوّر. **فكرة «المطوّر يدفع للمحقّق ونقتسم»: تُرفَض بصيغتها** (الدافع = المُتحقَّق منه ⇒ ختم
-  مطّاطي؛ واقتسام المنصّة لرسم الموافقة يجعلها طرفاً منحازاً). رسوم المنصّة تبقى على **التسويات فقط**.
-
----
-
-## TL;DR (English)
+## TL;DR
 
 DevSwap is non-custodial, so the answer to every question is **incentives + on-chain transparency +
 progressive decentralization**, never a central authority. (A) Arbiters: availability via ≥3-policy →
@@ -91,7 +66,7 @@ peer attestation); **reject** "subject pays verifier + platform takes a cut."
 and (3) guarantee a safe terminal state when it does fail. The current safe failure mode is "funds stay
 escrowed, nothing mis-paid" (ADR-0003 §4) — A5 upgrades that to "always resolvable."
 
-## A.2 The fallback when no arbiter exists (Q1 "الحل البديل")
+## A.2 The fallback when no arbiter exists
 
 Per A.1 Edge / **A5 / G7**. Two governed options (owner fork at ADR-0014):
 - **(a) Multisig emergency arbiter** — a special path, behind the same `disputeRaisedAt` snapshot rule
@@ -137,7 +112,7 @@ external wallet. So the penalty is:
    that stake is **slashable** on a proven-bad outcome — the only way to reach "skin in the game" beyond the
    escrowed milestone, and only on funds the dev *chose* to stake.
 
-## A.5 Precautionary plan when the **client** is proven wrong (Q1 "الخطة الاحترازية")
+## A.5 Precautionary plan when the **client** is proven wrong
 
 Protecting the dev from **extortion-by-dispute** is symmetric and is the main reason for the deposit:
 1. **Release the disputed milestone to the developer** (the ruling pays the honest dev).
@@ -232,7 +207,7 @@ Every major ad platform makes paid boost a **multiplier on merit, never an overr
 
 1. **Rank = on-chain reputation/merit × boost multiplier**, with the **multiplier capped** (e.g. ≤1.5–2×). A
    poorly-rated dev **cannot** buy the top no matter how much `$DSWP` they burn.
-2. **Label every boosted slot "Promoted / مُموَّل"** — clear and conspicuous (FTC endorsement guides; §18-safe
+2. **Label every boosted slot "Promoted"** — clear and conspicuous (FTC endorsement guides; legal-safe
    copy).
 3. **Cap promoted slots per page** (e.g. ≤2 of top 8 — mirrors Upwork's 4-slot cap).
 4. **Reputation floor:** no boosting brand-new/unrated accounts to the top; boost **decays over time**.
@@ -321,7 +296,7 @@ core-product usage, not artificial.)
 
 ## D.3 Liability framing (Q4 + Q7)
 
-- Copy says **"attested by [attester] / مُصدَّق من [الجهة]"**, **never** "DevSwap-verified" (§18-aligned: the
+- Copy says **"attested by [attester]"**, **never** "DevSwap-verified" (the
   actor is the attester, not the platform).
 - DevSwap publishes **schemas + the registry (the protocol)**; humans/attesters make **claims**; clients
   judge. Verification is a portable attestation, **not** a platform guarantee.

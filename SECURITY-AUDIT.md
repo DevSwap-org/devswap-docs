@@ -482,8 +482,8 @@ connect gate. The geo-block (§9.3) is the back-stop for US + OFAC; this banner 
 proactive consent surface everyone else sees before transferring USDT into the smart contract.
 
 Body uses "the smart contract — not the company — locks the funds and releases them only on
-your approval" — `locks` (not `holds`/`نحفظ`) is the legal-language CI-compliant verb for the
-smart-contract-as-actor framing (CLAUDE.md §18).
+your approval" — `locks` (not `holds`) is the legal-safe verb for the smart-contract-as-actor
+framing.
 
 i18n: +3 `post.disclaimer*` keys EN + AR (parity 517/517).
 
