@@ -629,3 +629,29 @@ Identical to §6.4 (V2.1) and §8.6 (V2.2). The hard-gate ruleset (`mythril` + `
 - `minWorkHistoryTasks = 0` (Sybil gate disabled on fresh-chain V2.4 instance)
 
 **Mainnet deployment** remains conditional on the 7 Security Gates in §1 (G5/G6/G7 still pending owner-action).
+
+### 11.8 V2.4 UI surfaces (2026-05-27) — Cycle 10 end-to-end closure
+
+Cycle 10's contract LIVE since 2026-05-26 was not user-actionable until the web layer was
+extended to call the new on-chain entrypoints. As of 2026-05-27 every V2.4 contract path
+has a corresponding UI surface, covering all three principal personas (party / arbiter / owner).
+
+| Persona | Surface | Contract calls | Commit |
+|---|---|---|---|
+| Dispute party (client / dev) | `/v2/job/[id]` — `DisputeVotePanel` | `voteOnDispute` (panel members), `finalizeDispute` (anyone after window or quorum), `claimWinnerDeposit` (pull-payment refund) | `0cb0375` |
+| Arbiter candidate / staker | `/v2/arbiter` | `arbiterStake`/`approve` 2-step → `stake`; `requestUnstake` (starts cooldown); `withdraw` (post-cooldown, blocked while `openDisputeCount > 0`) | `2083610` |
+| Owner / monitor | `/v2/admin` (+ inline `ArbiterPoolPanel`) | Read-only: `activeArbiterCount`, `getActiveArbiters`, `MIN_ARBITER_STAKE`, `STAKE_LOCK_DURATION` | `86bb059` |
+| Arbiter (inbox) | `/v2/arbiter` "My open panels" | `getLogs(DisputePanelStored) ∖ getLogs(DisputeFinalized)`, filtered client-side by viewer ∈ panel | `91718f6` |
+
+**Single-arbiter `resolveDispute` UI is hidden** when V4 is active — the on-chain function reverts
+with `UseVotingFlow` so showing the buttons would be misleading. The web layer detects this via
+`V4_ENABLED && isV4Deployed(chainId)` and renders only the panel-voting flow.
+
+**Pull-payment surfacing:** `claimArbiterReward` and `claimWinnerDeposit` are surfaced inline in
+`DisputeVotePanel` whenever `claimable*` reads return > 0 for the connected wallet — the contract
+never auto-pushes funds, so the UI is responsible for prompting eligible parties.
+
+**Production scaling note (arbiter inbox):** the current implementation uses viem `getLogs`
+directly from `ESCROW_V4.deployedAt`. Acceptable at testnet log volume; when the subgraph is
+extended to V2.4 (deferred — separate task) the inbox will swap to a GraphQL query paged by
+arbiter address.
