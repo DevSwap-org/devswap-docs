@@ -265,3 +265,103 @@ Add to the P5 pre-mainnet checklist in `BLOCKED.md`:
 - [ ] Pin Solidity to `>=0.8.32` for all mainnet-deployed contracts
 - [ ] Re-run slither + mythril on the new compiler output
 - [ ] Re-verify on BscScan with the new compiler version
+
+---
+
+## 9. Legal-Safety Controls (2026-05-26)
+
+**Date:** 2026-05-26 · **Decision:** owner directive after critical-review of generic AI advice that
+missed the actual gaps in DevSwap's posture (geo-block, token-sale disclosure, mythril deferral).
+**Status:** P0 + P1 implemented in commit `<this commit>`; owner action items below remain.
+
+### 9.1 Fjord Foundry LBP — cancelled
+
+The previously‑linked third‑party token sale (Fjord Foundry LBP at
+`app.fjordfoundry.com/token-sales/0x52a6…BE1d9`) has been **removed entirely** from the user
+interface and the public documentation pending qualified‑counsel review of the offering memorandum,
+jurisdiction restrictions, and securities‑facilitation risk. The token contract itself remains
+deployed on BSC mainnet (independent of any sale event).
+
+- Footer column "Token Sale (Fjord)" entry removed (`web/components/Footer.tsx` `colToken`).
+- i18n key `footer.linkTokenSale` removed from both `en.json` and `ar.json`.
+- Public docs README (`devswap-docs`) updated — Fjord bullet removed, replaced with
+  "No active token sale" + interstitial/geo-block note.
+
+### 9.2 Token-disclosure interstitial (`/[locale]/token-disclosure`)
+
+Server-rendered Next.js page. Any external `$DSWP`-related link in the UI is routed through
+`/{locale}/token-disclosure?next=<encoded URL>` first. The page:
+
+- Validates `next` against a **strict host allowlist** (`bscscan.com`, `www.bscscan.com`) to
+  prevent open-redirect abuse.
+- Displays the utility-token disclosure boilerplate in EN + AR (legal-language CI guard passes —
+  no "guarantee/yield/custody/refund/insurance" terms; uses "no price, yield, or return is
+  promised", "not an investment product", "the smart contract — not the company — moves funds").
+- Lists restricted jurisdictions (US + OFAC) explicitly.
+- Requires user click ("Continue to bscscan.com" → opens in new tab) or cancel.
+- Marked `dynamic = "force-dynamic"` so the disclosure cannot be cached/bypassed.
+
+**Boilerplate, not legal advice:** the copy explicitly states "pending review by qualified counsel".
+A counsel-reviewed version is the next legal milestone (owner action item §9.5).
+
+### 9.3 Geo-block (RFC 7725 — HTTP 451)
+
+`web/middleware.ts` intercepts every request hitting the Cloudflare Worker. When all three of:
+
+- `cf-ipcountry` (auto-populated by Cloudflare's edge) ∈ `{US, CU, IR, KP, SY, RU, BY}`,
+- pathname matches `/^\/(en|ar)\/(post|v2\/post|token-disclosure)(\/.*)?$/`,
+- request is not a static asset (matcher excludes `_next`, `api`, files-with-extension),
+
+…the middleware returns an inline bilingual HTML response with status **451** (Unavailable For Legal
+Reasons), `X-Block-Reason: geo-restricted-jurisdiction`, and `Cache-Control: no-store`. The blocked
+page works without the Next.js render pipeline (inline `<style>`, no external CSS dependencies) so
+it remains available even if the app shell is partially broken.
+
+**Scope is intentionally narrow:** /explore and read-only routes stay open globally. The block
+targets only actions that could be construed as offering securities or facilitating restricted
+transactions — funding (`/post`, `/v2/post`) and token-related (`/token-disclosure`).
+
+### 9.4 Mythril — promoted from "deferred" to CI hard gate
+
+`/.github/workflows/mythril.yml` runs Mythril symbolic execution on every change to
+`contracts/src/**.sol`. Two analysis steps:
+
+- `myth analyze src/DevSwapToken.sol` (execution-timeout 600s, max-depth 14)
+- `myth analyze src/DevSwapEscrowV2_2.sol` (execution-timeout 900s, max-depth 12)
+
+Mythril's exit code is non-zero on any SWC finding → step fails → workflow fails. Combined with
+**branch-protection requiring this status check on `main`** (owner action item §9.5), no build can
+deploy without a clean Mythril run.
+
+This closes the gap in §1 (the original audit noted "mythril ⛔ deferred — not installed in this
+environment"). Mythril is now the **second pillar** of the P5 pre-mainnet checklist alongside
+slither (pattern matching) and forge-coverage (test exhaustion).
+
+### 9.5 Owner action items (manual; not Claude-executable)
+
+These require GitHub-org-level permissions and are tracked here so they don't get lost:
+
+- [ ] **Branch protection on `main`** — Settings → Branches → `main` → Require status checks to
+      pass before merging → add `mythril (P5 hard gate) / mythril` AND `security / slither` AND
+      `web / lint+typecheck+build` to required.
+- [ ] **Counsel-reviewed token-disclosure copy** — replace the boilerplate in
+      `web/messages/{en,ar}.json` `tokenDisclosure.*` once qualified counsel has reviewed.
+- [ ] **Counsel-reviewed geo-block list** — confirm the conservative country list (US + CU/IR/KP/SY +
+      RU/BY) matches the firm's risk appetite; add VE or other sectoral targets if advised.
+- [ ] **Cloudflare WAF rule (optional, defence in depth)** — add a CF Firewall Rule at the
+      edge that mirrors the middleware block, so the request never reaches the Worker for
+      restricted countries × paths.
+- [ ] **Verify Mythril CI is "required" on org settings** — until set, the gate is informational
+      and a build *could* be merged with failing Mythril.
+
+### 9.6 Verification (post-deploy)
+
+- `curl -sI -H 'cf-ipcountry: US' https://devswap.pro/en/post` → expected `HTTP/2 451`.
+- `curl -sI -H 'cf-ipcountry: SA' https://devswap.pro/en/post` → expected `HTTP/2 200`.
+- `curl -sf https://devswap.pro/en/token-disclosure?next=https://bscscan.com/token/0x52a6…` →
+  expected 200 with "Continue to bscscan.com" button rendered.
+- Footer "Token" column shows only "$DSWP (Mainnet)" via interstitial; no Fjord link present.
+
+The first two curl checks may be defeated by Cloudflare stripping client-sent `cf-ipcountry`
+headers in production (the edge always overwrites) — to test, use a real VPN-routed request or
+Cloudflare's "WAF Skip Rule" simulator.

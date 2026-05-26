@@ -39,14 +39,18 @@ buyback‑and‑burn mechanism. No price, yield, or return is promised — `$DSW
 ### `$DSWP` on BSC mainnet
 The `$DSWP` ERC‑20 token contract is deployed on BNB Smart Chain mainnet. The marketplace
 itself is still on **testnet** (see the top of this page); the token contract on mainnet is independent
-of the marketplace and exists for the buyback‑and‑burn mechanism and community governance.
+of the marketplace and exists for the buyback‑and‑burn mechanism and (future) community governance.
 
 - **Token contract (mainnet):** [`0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9`](https://bscscan.com/token/0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9) — BscScan
-- **Token sale (Fjord Foundry):** [app.fjordfoundry.com/token-sales/0x52a6…BE1d9](https://app.fjordfoundry.com/token-sales/0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9)
 
 `$DSWP` is a utility token. No price, yield, revenue share, or return is promised. It is not an
-investment product. Do your own research and consult counsel in your jurisdiction before participating
-in any token sale.
+investment product.
+
+**No active token sale.** Any previously linked third‑party sale page has been removed pending
+qualified‑counsel review. The DevSwap interface displays a server‑rendered interstitial
+disclosure before any external $DSWP‑related link is followed, and US persons + OFAC‑sanctioned
+jurisdictions (Cuba, Iran, North Korea, Syria, Russia, Belarus) are geo‑blocked from
+token‑related and funding routes (HTTP 451 — see [SECURITY-AUDIT §9](SECURITY-AUDIT.md#9-legal-safety-controls-2026-05-26)).
 
 ## Network & technical facts
 - **USDT on BSC has 18 decimals** (≠ Ethereum's 6) — amounts are computed in integer wei.
