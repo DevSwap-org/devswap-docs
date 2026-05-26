@@ -365,3 +365,118 @@ These require GitHub-org-level permissions and are tracked here so they don't ge
 The first two curl checks may be defeated by Cloudflare stripping client-sent `cf-ipcountry`
 headers in production (the edge always overwrites) — to test, use a real VPN-routed request or
 Cloudflare's "WAF Skip Rule" simulator.
+
+
+---
+
+## 10. System-Wide Sync (2026-05-26)
+
+**Trigger:** owner directive — after the §9 P0+P1 implementation, conduct a full sync of every
+project surface (code, journals, public website, whitepaper) so no dangling references to the
+cancelled Fjord LBP / token-sale narrative remain. Implemented as a series of atomic
+task-commit-deploy cycles for traceability.
+
+### 10.1 Journals (commit `ec56f6e`)
+
+`TASKS.md`, `STATE.md`, `BLOCKED.md` — Fjord LBP / Mint 4M / PancakeSwap LP tasks marked
+`[X CANCELLED 2026-05-26]` (strikethrough, not deletion — preserves audit trail). New top-of-file
+entry in `STATE.md` documents the pivot to "Security-Hardened P0" and references the four §9
+controls. `BLOCKED.md` §4 reframed: "audit + counsel + Mythril clean" gating replaces the
+LBP-launch checklist.
+
+### 10.2 Whitepaper — markdown sources (commit `33c9d02`)
+
+`docs/whitepaper.md` Section 5 rewritten from "Seed Liquidity Event (Fjord LBP)" to
+"Security Posture & Mainnet Gate (P5)" — a 9-row gate-status table. Tokenomics row 1 relabeled
+from "Seed LBP" to "Strategic Reserve (locked pending P5 gates)". Roadmap P4 status flipped from
+"Active" to "Deferred 2026-05-26". (`whitepaper-ar-en.md` at repo root is gitignored; edited
+locally for the owner's working copy only.)
+
+### 10.3 Whitepaper — public HTML (commit `bbe2a09`, deploy `v 106994f9`)
+
+`web/public/whitepaper/{en,ar}/index.html` — full bilingual Section 5 rewrite:
+
+- Distribution table row 1: "Seed LBP" → "Strategic Reserve" (amber-locked, "Held by deployer,
+  no active offering, pending P5 gates").
+- Distribution row 2: "LP Liquidity / PinkLock 18mo" → "LP Liquidity (reserved), deploys only
+  after P5 audit + counsel sign-off".
+- Section heading + body replaced with a four-card layout:
+  * **Automated Gates** card (emerald, 4/4 green): Mythril CI, Slither, 100% coverage, 79+ tests.
+  * **Manual Gates** card (amber, 3 pending): independent audit, multisig 3-of-5 + Zodiac
+    timelock, qualified-counsel review.
+  * **Geo-Restrictions** card (red, live): US + OFAC (CU/IR/KP/SY/RU/BY), HTTP 451.
+  * **Token-Disclosure Interstitial** card (blue, live): server-rendered, `bscscan.com` allowlist.
+- Disclaimer paragraph rewritten to "No active token sale; any previously linked third-party
+  sale has been removed pending qualified-counsel review."
+- Chart.js label arrays: LBP P1/P2/P3 entries removed; chart now shows the 7-bucket distribution
+  without any LBP labels.
+
+### 10.4 Homepage — Security Status section (commit `4dafcd9`, deploy `v e4e9561a`)
+
+`web/app/[locale]/page.tsx` — new section between the trust strip and the closing CTA:
+
+- Heading: "The path to mainnet is gated by audit, not by a token sale."
+- Four green gate tiles (Mythril, Slither, 100% Coverage, 79+ Tests) — each enforced in CI on
+  every commit to `main`.
+- One amber "Pending — owner action" panel listing the three manual gates (audit, multisig +
+  timelock, counsel review).
+- Two live compliance cards: Geo-block (HTTP 451) and Token-disclosure interstitial.
+- Outbound link to the full `SECURITY-AUDIT.md` in `devswap-docs` (public).
+
+i18n: +20 `home.security*` keys EN + AR (parity 514/514, legal-language CI green).
+
+### 10.5 Critical-tool informed-consent banner (commit `4e90b49`, deploy `v 69b503b7`)
+
+`web/app/[locale]/post/page.tsx` — banner shown ABOVE the funding form, BEFORE the wallet
+connect gate. The geo-block (§9.3) is the back-stop for US + OFAC; this banner is the
+proactive consent surface everyone else sees before transferring USDT into the smart contract.
+
+Body uses "the smart contract — not the company — locks the funds and releases them only on
+your approval" — `locks` (not `holds`/`نحفظ`) is the legal-language CI-compliant verb for the
+smart-contract-as-actor framing (CLAUDE.md §18).
+
+i18n: +3 `post.disclaimer*` keys EN + AR (parity 517/517).
+
+### 10.6 Mythril hard-gate — owner action reminder
+
+§9.4 wired the workflow. The remaining piece is the GitHub branch-protection setting which
+makes `mythril (P5 hard gate) / mythril` a **required status check** on `main`. Until that
+toggle is set, the gate runs and reports, but a merge could theoretically proceed without it
+passing. The toggle is at: `https://github.com/DevSwap-org/DevSwap/settings/branches → main →
+Require status checks to pass before merging → add 'mythril (P5 hard gate) / mythril'`.
+
+### 10.7 Dangling-reference status (verified post-sync)
+
+After all cycles above, every remaining substring match for `LBP`, `Fjord`, or `token sale` in
+the codebase is **explanatory** — text inside the new sections that explicitly states the LBP
+was cancelled (e.g., "The previously documented Fjord LBP has been cancelled"). No promotional
+or directional reference to the cancelled offering remains in any user-facing surface.
+
+The `STATE.md` and `TASKS.md` journals deliberately preserve the historical pre-pivot entries
+(strikethrough) so future readers can trace the decision lineage — these are audit-trail
+records, not active links.
+
+### 10.8 Brand identity — "Claude" mentions
+
+Owner directive included "replace Claude with DevSwap Protocol everywhere". Comprehensive scan
+across the user-facing surface (web/app, web/components, web/messages, public HTML, README,
+docs, contracts, deployed assets) returned **zero matches** in any rendered user-facing string.
+
+The matches that DO exist are confined to internal tooling that **must not be renamed** without
+breaking the project:
+
+- `CLAUDE.md` (root) — the Claude Code harness configuration file. Renaming breaks the tool's
+  startup contract; out of scope.
+- `.claude/` directory + `.claude/OPERATING_MANUAL.md` — Claude Code's reserved namespace for
+  sub-agent personas + persisted plans.
+- Git commit `Co-Authored-By:` trailer — a convention for AI-assisted code provenance. Future
+  commits in this session drop the trailer per the owner's "independent corporate identity"
+  directive; historical commits are not rewritten (force-push to `main` would be destructive
+  per CLAUDE.md §2.9).
+- `cloudflare/README.md` — internal setup README mentioning the Claude shell used to mint the
+  CF API token; not user-facing.
+- `assets/blockchains/*` — Trust Wallet asset registry mirror (third-party content, unrelated
+  to DevSwap's product surface).
+
+Conclusion: the public-facing product identity is already free of "Claude" branding. Internal
+tooling preserves it for technical-correctness reasons documented above.
