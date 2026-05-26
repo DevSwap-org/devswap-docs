@@ -133,6 +133,24 @@ The Guardian veto is removed via a DAO Tier-3 supermajority vote (75% of quorum)
 ## 5. What the DAO Governs
 
 ### 5.1 Tier 1 — Protocol Parameters (low sensitivity)
+
+**Active V2.4 Dispute Engine Parameters — Tier-1 Governance Adjustable:**
+
+| Setter | Parameter | Default | Hard Ceiling | Effect |
+|--------|-----------|---------|--------------|--------|
+| `setDisputeFeeBps(uint256)` | `disputeFeeBps` | 300 (3%) | 1000 (10%) | Scales the per-dispute deposit linearly with milestone size |
+| `setDisputeBounds(uint256 min, uint256 max)` | `minDisputeDeposit` / `maxDisputeDeposit` | 15 USDT / 150 USDT | `max ≤ 10,000 USDT` ; `min ≤ max` | Floor protects arbiter compensation; ceiling protects user capital |
+| `setMinWorkHistoryTasks(uint256)` | `minWorkHistoryTasks` | 3 | unbounded | Sybil gate floor for gated-value jobs (V2.3) |
+| `setGatedJobThreshold(uint256)` | `gatedJobThreshold` | 500 USDT | unbounded | Above this milestone amount, the Sybil gate applies (V2.3) |
+| `setDevReputationStakePercent(uint256)` | `devReputationStakePercent` | 100 (1%) | 1000 (10%) | Developer's reputation-lock at job approval (V2.3) |
+| `setSlashBps(uint256)` (Arbiter Pool) | `slashBps` | 500 (5%) | 1000 (10%) | Stake slashed from non-voting arbiters, sent to `burn()` |
+| `setVotingWindow(uint256)` (Arbiter Pool) | `votingWindow` | 7 days | [1, 30] days | Maximum dispute-panel voting window |
+| `setArbiterPool(address)` (V2.4 Escrow) | `arbiterPool` | (set at deploy) | n/a | Plug-in upgrade path for Arbiter Pool versions |
+
+All setters pass through the Tier-1 Timelock (48h) under the DAO Governor after the G3 phase. They
+are individually `onlyOwner` until ownership is transferred to the timelock.
+
+
 **Timelock: 48h | Quorum: 2% circulating | Voting period: 3 days | Simple majority**
 
 - Dispute timeout duration (currently: 30 days)

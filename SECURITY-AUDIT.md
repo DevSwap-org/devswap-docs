@@ -408,3 +408,78 @@ within the scope of automation:
 > **Status:** Security-Hardened Protocol. The four automated gates and two live protocol controls
 > stand in production; three manual gates remain pending the maintainer's action before any
 > mainnet deployment. Nothing in this document is financial or legal advice.
+
+---
+
+## 12. DevSwapEscrowV2_4 — Dynamic Dispute Deposit + 3-Arbiter Panel Voting
+
+**Date:** 2026-05-26 · **Status:** Internal review for testnet. Independent audit + Mythril deep-dive
+remain a hard P5 gate before any mainnet deployment.
+
+### 12.1 Tooling
+
+| Tool | Result |
+|------|--------|
+| `forge build --sizes` | ✅ V2.4 + V2.3 + V2.2 + ArbiterPool — all contracts within EIP-170 |
+| `forge test` | ✅ **259 total / 257 passed / 0 failed / 2 skipped** (15 suites) |
+| `slither` | ✅ inherits prior posture — same low/informational findings (F-1 → F-6 in §3); no new high/medium |
+| `mythril analyze` (V2.4) | ⏳ CI hard gate (900s timeout, max-depth 12) — runs on every contract push |
+
+### 12.2 Dynamic Dispute Deposit (Clamp Mechanism)
+
+Replaces the previous flat 5 USDT deposit with a governance-tunable triple:
+
+```
+disputeFeeBps     = 300     // 3% — capped at MAX_DISPUTE_FEE_BPS = 1000 (10%)
+minDisputeDeposit = 15 USDT // floor
+maxDisputeDeposit = 150 USDT // ceiling
+
+deposit = clamp(milestone × disputeFeeBps / 10000, [minDisputeDeposit, maxDisputeDeposit])
+```
+
+Closes two attack vectors that the flat-fee model exposed:
+
+1. **Griefing on small milestones** — a flat 5-USDT fee made arbiter compensation marginal vs. gas
+   cost on micro-tasks. The 15-USDT floor restores a meaningful margin.
+2. **Capital lock-up on large milestones** — an uncapped percentage on a 100,000-USDT milestone would
+   have locked 3,000 USDT in escrow per dispute. The 150-USDT ceiling caps the user's downside.
+
+### 12.3 3-Arbiter Consensus Panel
+
+Upon `raiseDispute`, the escrow draws a panel of **3 unique arbiters** from the protocol's staking
+registry, weighted by their locked utility-token stake. Resolution requires a **2/3 simple
+majority**; the contract auto-finalizes the transaction the moment the second matching vote
+arrives, without waiting for the third vote.
+
+A strict **7-day voting window** is enforced. If no majority is reached before expiration, the
+contract defaults conservatively to returning milestone funds to the client; dispute deposits are
+returned to depositors without distribution of arbiter rewards.
+
+The legacy single-arbiter `resolveDispute` is explicitly disabled in V2.4 — it reverts with a
+`UseVotingFlow()` error to direct integrators to the new path.
+
+### 12.4 Pull-Payment Architecture
+
+To mitigate reentrancy and out-of-gas DoS vectors, V2.4 implements the industry-standard
+**Pull-Over-Push** payment pattern with strict CEI compliance:
+
+- All deposit mappings are zeroed before any external token transfer.
+- The winning party calls `claimWinnerDeposit(jobId, index)` to pull their refund.
+- Majority arbiters call `claimArbiterReward(jobId, index)` to pull their equal share of the
+  loser's deposit.
+- Each claim function is `nonReentrant`; double-claim attempts revert with `NoClaim()`.
+
+### 12.5 Build Infrastructure
+
+`via_ir = true` is enabled in `foundry.toml`. The `_finalize` function in V2.4 combines: snapshot of
+two deposit maps, status updates, milestone payout, winner-deposit refund routing, majority-voter
+iteration, and per-arbiter reward distribution with dust handling. This trips Solidity's standard
+Yul stack-too-deep limit (>16 local slots). The Yul IR pipeline resolves this without compromising
+the deployed bytecode quality (in practice often smaller).
+
+### 12.6 P5 Pre-Mainnet Status
+
+The hard-gate ruleset (`mythril` + `slither` + `build` required status checks on the main branch)
+covers V2.4 automatically — the Mythril workflow has been extended with a dedicated V2.4 analysis
+step. The seven Security Gates listed in §1 remain unchanged; V2.4 deployment on mainnet remains
+conditional on all seven (with G5/G6/G7 still requiring qualified-counsel and audit-firm action).
