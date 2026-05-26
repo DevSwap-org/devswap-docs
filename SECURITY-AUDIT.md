@@ -77,8 +77,16 @@ surface today:
 | F-2 | Informational | `cancelTask` | **Acknowledged** | Uses `block.timestamp` for the submit-timeout. Validator timestamp drift (a few seconds) is immaterial against a ≥ 1-day (default 14-day) window. |
 | F-3 | Low (benign) | `_payout` | **Acknowledged / mitigated** | Slither `reentrancy-benign`: `buybackReserve` is written in the `catch` after the inline-buyback external call. Mitigated by: (a) `_payout` runs only inside `nonReentrant` `releaseFunds`/`resolveDispute`; (b) the hook is `onlySelf`; (c) dev + fee are paid *before* the buyback attempt, so the deferred write affects only accounting, never user funds. |
 | F-4 | Informational | `_swapAndBurn` | **Acknowledged** | Slither `reentrancy-events`: `BuybackBurned` emitted after the swap. Event-ordering only; no state or fund impact. |
+| F-5 | Medium (acknowledged FP) | `DevSwapEscrowV2_2.createJob` | **Acknowledged / false positive** | Slither `uninitialized-local` on the `lockNow` and `total` locals. Solidity 0.8.x **automatically zero-initializes** all local variables; both are written before any read in normal control flow. Slither's intra-procedural analysis cannot see this. The CI gate uses `--fail-high` so this medium false positive does not block the build; explicit `= false` / `= 0` initialization is the cosmetic remediation. |
+| F-6 | Low (acknowledged) | V2.1 + V2.2 (multiple) | **Acknowledged** | Slither `timestamp` on dispute, timeout, and funding-deadline checks (`expireUnfunded`, `claimMilestone`, `cancelMilestone`, `timeoutDispute`, `executeArbiter`). All comparisons use **day-scale windows** (≥ 1 day); validator timestamp drift of a few seconds is immaterial. Same posture as F-2 expanded to V2.1 / V2.2. |
 
-**No high- or medium-severity findings.**
+**No high-severity findings.** Two medium-class items above are documented as
+an acknowledged false positive (F-5) or informational (F-6).
+
+**CI gate posture.** The Slither workflow runs `slither . --fail-high`. A
+**new** high-severity finding fails the build. A **new** medium-severity
+finding must be either remediated or explicitly triaged into the table above
+before merge.
 
 ---
 
