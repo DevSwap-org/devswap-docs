@@ -1,0 +1,8 @@
+root: ./
+
+structure:
+  readme: README.md
+  summary: SUMMARY.md
+
+# Auto-redirects from older paths (none right now; reserved for future moves).
+redirects: {}

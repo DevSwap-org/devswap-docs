@@ -4,6 +4,7 @@
 > verified smart contract, released only on the client's explicit approval (or via deterministic
 > on-chain dispute and timeout rules). Non-custodial by design; no middleman, no platform escrow.
 
+- 📘 **Hosted docs:** **https://docs.devswap.pro** (rendered by GitBook from this repo)
 - 🌐 Application: **https://devswap.pro**
 - 📜 Contracts (public source): **https://github.com/DevSwap-org/devswap-contracts**
 - 🔐 Security policy: **https://github.com/DevSwap-org/.github/blob/main/SECURITY.md**
