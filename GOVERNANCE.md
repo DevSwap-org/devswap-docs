@@ -1,12 +1,18 @@
-# DevSwap — Decentralization & DAO Governance Roadmap
+# DevSwap Protocol — Decentralization & DAO Governance Roadmap
 
-- **Status:** Design document — owner-ratified direction; ADR-0019 reserved for the technical spec
-- **Date:** 2026-05-24
-- **Deciders:** Owner (Hamdan)
-- **Relates to:** ADR-0003 (arbiter hardening), ADR-0006 (non-custodial positioning),
-  `docs/DISPUTE-RESOLUTION.md` (arbitration roadmap), `docs/TRUST-AND-INCENTIVES.md` (economics),
-  `docs/TOKENOMICS.md` ($DSWP), `STATE.md`
-- **Reserved ADRs:** 0019 (DAO governance architecture), 0020 (Governor contract + timelock tiers)
+- **Status:** Design document — maintainer-ratified direction; reserved ADR slots for the technical spec.
+- **Deciders:** DevSwap Protocol Maintainer
+- **Relates to:** the protocol's arbiter-hardening decision record (ADR-0003), the non-custodial
+  positioning decision record (ADR-0006), and the protocol's internal arbitration roadmap, incentive
+  design, and tokenomics planning documents. Public-facing security posture: [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
+- **Reserved ADRs:** the DAO governance architecture (ADR-0019) and Governor-contract parameters
+  (ADR-0020) — drafted on ratification of this roadmap.
+
+> **Security Gates context.** Every phase below is conditional on the protocol-level Security Gates
+> documented in [`SECURITY-AUDIT.md`](SECURITY-AUDIT.md) — Mythril CI, Slither, 100% test coverage,
+> the 79+ test suite (automated, all green), independent third-party audit, multisig + timelock, and
+> qualified-counsel review (manual, pending). G1 mainnet launch cannot proceed before gates 5–7
+> close.
 
 ---
 
@@ -95,7 +101,7 @@ decentralization** for mainnet.
 - Does **not** require any token or Governor contract.
 
 ### G2 — Token launch: $DSWP distributed + ERC20Votes activated (post-GMV)
-After GMV is proven and $DSWP is launched (see `TOKENOMICS.md` validate-first gate), the token
+After GMV is proven and the protocol utility token meets the validate-first gate, the token
 contract is upgraded to include `ERC20Votes` (snapshot-based voting power). No Governor yet — just
 making the token governance-ready.
 
@@ -133,7 +139,7 @@ The Guardian veto is removed via a DAO Tier-3 supermajority vote (75% of quorum)
 - Dispute deposit amounts (floor and ceiling)
 - Milestone review window
 - Arbiter-pool minimum size policy (currently: ≥3)
-- Promoted-slots-per-page cap and multiplier ceiling (C.2 in TRUST-AND-INCENTIVES)
+- Promoted-slots-per-page cap and multiplier ceiling (protocol incentive design, C.2)
 - Reputation-floor requirements for boosts
 - Token sink prices (visibility boost, priority queue cost in $DSWP)
 
@@ -264,7 +270,7 @@ token holders lobby for their preferred arbiters. Separating *policy* (DAO) from
 
 ### 7.2 Long-term: DAO-governed staked-random-pool (A5/A6 roadmap)
 
-In the DISPUTE-RESOLUTION.md A5/A6 roadmap, arbiter selection eventually moves to a
+In the protocol's internal arbitration roadmap (stages A5/A6), arbiter selection eventually moves to a
 **staked-random-pool** (Kleros-style): any qualified token holder stakes $DSWP to enter the pool;
 the contract draws randomly weighted by stake for each dispute; the drawn arbiter judges, and is
 rewarded (from the loser's deposit) or slashed (for ignoring a dispute or being overturned on
@@ -276,7 +282,7 @@ human discretion. **No person appoints anyone.** The DAO sets the rules; the con
 panel.
 
 **Dependency:** This requires the arbiter-stake ADR-0013 and legal review of stake-to-work
-framing before building (see TRUST-AND-INCENTIVES.md Fork 5).
+framing before building (see the protocol's incentive design, Fork 5).
 
 ### 7.3 What governance cannot do to arbitration
 
@@ -354,7 +360,7 @@ When G4 is reached, the liability posture shifts fundamentally:
 
 3. **Token concentration = governance concentration.** If the top 10 wallets hold 60% of $DSWP,
    governance is de facto centralised regardless of the on-chain mechanism. The token distribution
-   design (TOKENOMICS.md — team vesting, community allocation) must produce genuine dispersion. This
+   design (team vesting and community allocation in the protocol's tokenomics plan) must produce genuine dispersion. This
    is a social/distribution problem, not a technical one.
 
 4. **"Sufficiently decentralized" is not a bright legal line.** The SEC's analysis is fact-specific
@@ -403,12 +409,12 @@ When G4 is reached, the liability posture shifts fundamentally:
 
 | Prior decision | How governance integrates |
 |---|---|
-| ADR-0003 (arbiter hardening) | Arbiter-pool *policy* moves to DAO Tier-2; individual appointments remain admin-executed within policy; snapshot rule is immutable |
-| ADR-0006 (non-custodial) | Governance strengthens this: no governance vote can make the platform custodial |
-| ADR-0009 (hybrid funding) | Funding mode defaults and timeout windows = Tier-1 governance |
-| TRUST-AND-INCENTIVES Fork 1–7 | All 7 forks are Tier-1/Tier-2 governance parameters post-G3; owner ratifies them now as bootstrap values |
-| TOKENOMICS validate-first | $DSWP not launched until GMV proven; governance activation follows token launch (G2), not before |
-| P5 gate | G1 is the P5 gate. G1 must pass audit before mainnet. |
+| Arbiter-hardening decision record (ADR-0003) | Arbiter-pool *policy* moves to DAO Tier-2; individual appointments remain admin-executed within policy; snapshot rule is immutable |
+| Non-custodial positioning (ADR-0006) | Governance strengthens this: no governance vote can make the protocol custodial |
+| Hybrid-funding decision record (ADR-0009) | Funding mode defaults and timeout windows = Tier-1 governance |
+| Protocol incentive design (Fork 1–7) | All 7 forks are Tier-1/Tier-2 governance parameters post-G3; the maintainer ratifies them now as bootstrap values |
+| Validate-first tokenomics | The protocol utility token is not launched until GMV is proven; governance activation follows token launch (G2), not before |
+| Security Gates (P5) | G1 is the P5 gate. G1 must pass independent audit + multisig + counsel review before mainnet. |
 
 ---
 
