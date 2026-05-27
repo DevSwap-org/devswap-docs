@@ -1,0 +1,6 @@
+# Backup files from editing tools (sed -i.bak, etc.) — never commit
+*.bak
+*.tmp
+*.swp
+*.swo
+.DS_Store
