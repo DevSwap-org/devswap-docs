@@ -220,9 +220,9 @@ Constructor args:
 - `usdt`: `0xE950eb93aCa1f29848f5cBac61d78657e3c97287` (testnet USDT)
 - `dswp`: `0x2DD2Cd306f32cd6709d4316EF0df125235654734` (reused testnet $DSWP)
 - `router`: `0xD99D1c33F9fC3444f8101754aBC46c52416550D1` (PancakeSwap V2 testnet)
-- `feeRecipient`: project treasury (on-chain, BscScan-verifiable)
-- `owner`: project multisig (will migrate to 3-of-5 Safe before mainnet — Gate G6)
-- `initialArbiter`: same as feeRecipient (bootstrap; superseded by the staked arbiter pool in V2.4)
+- `feeRecipient`: `0xb60Eef021F26F5186b54c1c3E872ea5db5c32e61`
+- `owner`: `0x1965E194C1A8f2574c41B2894F5cDf1bD2726e59`
+- `initialArbiter`: `0xb60Eef021F26F5186b54c1c3E872ea5db5c32e61` (= feeRecipient)
 
 ---
 

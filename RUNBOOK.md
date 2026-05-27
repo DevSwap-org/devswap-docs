@@ -15,7 +15,6 @@ Operational procedures for running the DevSwap contracts and dApp safely. Pair w
 | DevSwapEscrow (V1, legacy/live) | `0xCEE07220dEC813f8A58b7Da73349dabbc4005840` |
 | $DSWP token | `0x2DD2Cd306f32cd6709d4316EF0df125235654734` |
 | Test USDT | `0xE950eb93aCa1f29848f5cBac61d78657e3c97287` |
-| Owner / deployer | `0xb60Eef021F26F5186b54c1c3E872ea5db5c32e61` |
 | PancakeSwap V2 router (testnet) | `0xD99D1c33F9fC3444f8101754aBC46c52416550D1` |
 
 > The original (non-hardened) V2 `0x13e8…6AC` is **deprecated/abandoned** — do not use.

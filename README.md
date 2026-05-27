@@ -64,7 +64,7 @@ surface — these are documented in detail in [SECURITY-AUDIT §9](SECURITY-AUDI
 
 ---
 
-## 3. What's new — V2.4 dispute panel (Cycle 10, 2026-05-26)
+## 3. What's new — V2.4 dispute panel
 
 V2.4 replaces the single-arbiter dispute path with a **3-arbiter consensus panel**:
 

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-05-22
-- **Deciders:** Owner (Hamdan) + Lead Web3 Engineer
+- **Deciders:** Maintainer team
 - **Supersedes:** —
 
 ## Context

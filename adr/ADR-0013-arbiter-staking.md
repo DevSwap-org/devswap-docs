@@ -1,7 +1,7 @@
 # ADR-0013 — Arbiter Staking Pool with weighted random draw + slashing
 
 - **Status:** Proposed (architectural spec — implementation in V2.3+ via separate ADR-of-implementation)
-- **Date:** 2026-05-26 (Cycle 8 Task 2)
+- **Date:** 2026-05-26
 - **Deciders:** Owner + Lead Blockchain Architect
 - **Relates to:** ADR-0003 (V2.1 arbiter hardening — `arbiterSince` snapshot), the protocol's
   internal dispute-resolution roadmap (A5/A6 staked random pool), and

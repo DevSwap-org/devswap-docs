@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (one sub-decision flagged for owner ratification — §4)
 - **Date:** 2026-05-22
-- **Deciders:** Owner (Hamdan) + Lead Web3 Engineer
+- **Deciders:** Maintainer team
 - **Relates to:** ADR-0002 (V2), `contracts/src/DevSwapEscrowV2_1.sol`, `SECURITY-AUDIT.md` §6
 - **Supersedes (operationally):** the dispute model of the original `DevSwapEscrowV2`
 
