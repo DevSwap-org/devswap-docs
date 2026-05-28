@@ -9,26 +9,52 @@ Chain (BSC)**, settled in **USDT** escrow, with a platform utility token
 
 ## System diagram (logical)
 
+```mermaid
+flowchart TB
+    subgraph Client["👤 User"]
+      Browser["Web Browser<br/>(wallet extension)"]
+    end
+
+    subgraph Web["🌐 Application — Cloudflare Workers"]
+      App["Next.js 14 App<br/>Explore · Post · Task · Wallet"]
+      API["API Routes<br/>SIWE auth · IPFS pin · push"]
+    end
+
+    subgraph Chain["⛓️ BNB Smart Chain (chain 56 / 97)"]
+      Escrow["DevSwapEscrow<br/>milestones · disputes"]
+      Token["$DSWP Token<br/>burnable, capped 100M"]
+      USDT["USDT — settlement asset"]
+      Pancake["PancakeSwap V2 — router"]
+    end
+
+    subgraph Index["📊 Off-chain helpers (non-custodial)"]
+      Graph["The Graph<br/>subgraph"]
+      Keeper["Keeper<br/>buyback cron"]
+      Supabase["Supabase<br/>mirror + search"]
+      FCM["Firebase<br/>push notifications"]
+    end
+
+    Browser --> App
+    App <--> API
+    App <-->|wagmi/viem| Chain
+    Escrow -. events .-> Graph
+    Escrow -. events .-> Supabase
+    Escrow -. events .-> FCM
+    Keeper -->|cron| Escrow
+    Escrow --> Pancake
+    Pancake --> Token
+
+    style Chain fill:#FEF3C7,stroke:#F59E0B,color:#1E293B
+    style Web fill:#EEF2FF,stroke:#4F46E5,color:#1E293B
+    style Index fill:#F1F5F9,stroke:#475569,color:#1E293B
+    style Client fill:#F8FAFC,stroke:#94A3B8,color:#1E293B
 ```
-                ┌────────────────────────────────────────────┐
-   Browser ───▶ │  web/  (Next.js 14 App Router, wagmi/viem)  │
-                │  Explore · Post · Task · Wallet · Admin      │
-                └───────┬─────────────────────┬───────────────┘
-                        │ reads/writes          │ reads (indexed)
-                        ▼                       ▼
-            ┌────────────────────┐    ┌────────────────────────┐
-            │ BSC (chain 56/97)  │    │ subgraph/ (The Graph)   │
-            │  DevSwapEscrow     │───▶│  Task/User/Buyback/...   │
-            │  DevSwapToken      │    └────────────────────────┘
-            │  USDT · Pancake V2 │
-            └─────────┬──────────┘
-                      │ events
-        ┌─────────────┼───────────────────────────┐
-        ▼             ▼                            ▼
-  keeper/        notifications/             supabase/ (off-chain
-  (buyback cron) (FCM push)                  mirror + search, blocked
-                                             on keys)
-```
+
+**Read-vs-write split.** Writes ALWAYS go directly to the smart contract via
+the user's wallet. Reads can come from the chain (`viem` direct), the subgraph
+(historical, indexed), or Supabase (search/preview only — never a source of
+truth). Compromising any off-chain helper cannot move funds because funds only
+move on signed transactions.
 
 ## Folders (flat layout — see ADR-0001)
 

@@ -26,6 +26,26 @@
 | **[Runbook](RUNBOOK.md)** | Operational playbook — deploy, monitor, recover |
 | **[ADRs](adr/)** | Architecture decision records — every irreversible choice and why |
 
+### 🔄 How it works (one settlement, end-to-end)
+
+```mermaid
+flowchart LR
+    A["💼 Client posts<br/>a milestone"] -->|locks USDT<br/>on-chain| B["🔒 Smart contract<br/>escrows funds"]
+    B --> C["👨‍💻 Developer<br/>delivers work"]
+    C -->|client approves| D["✅ Funds release<br/>97% dev · 3% fee"]
+    C -.->|optional dispute| E["⚖️ Panel votes<br/>50/35/5/10 split"]
+    style A fill:#EEF2FF,stroke:#4F46E5,color:#1E293B
+    style B fill:#FEF3C7,stroke:#F59E0B,color:#1E293B
+    style C fill:#EEF2FF,stroke:#4F46E5,color:#1E293B
+    style D fill:#DCFCE7,stroke:#10B981,color:#1E293B
+    style E fill:#FEE2E2,stroke:#EF4444,color:#1E293B
+```
+
+**The smart contract is the actor at every step** — no platform escrow, no
+intermediary holding funds. The 3% protocol fee splits 50/50 between the
+platform treasury and an automatic `$DSWP` buyback-and-burn (see
+[Tokenomics](TOKENOMICS.md) for the burn mechanics).
+
 ---
 
 ## 1. Protocol Security — first principle

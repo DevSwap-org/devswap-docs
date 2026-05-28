@@ -26,6 +26,39 @@
 
 ## TL;DR
 
+### Lifecycle of a milestone — with and without a dispute
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open: client posts job
+    Open --> Funded: USDT locked on-chain
+    Funded --> InReview: developer submits delivery
+    InReview --> Released: client approves<br/>(97% dev · 3% protocol fee)
+    InReview --> Disputed: either party<br/>posts 3% symmetric bond
+    Disputed --> Voting: 3 arbiters drawn<br/>(weighted-random by stake)
+    Voting --> Finalized: 2-of-3 majority<br/>or window expires
+    Finalized --> Claimed: winner pulls payment
+    Released --> [*]
+    Claimed --> [*]
+```
+
+### Where the loser's bond goes (V2.6 — symmetric 3% bond, 4-way split)
+
+```mermaid
+pie title Dispute loser-bond distribution
+    "Winner refund" : 50
+    "Arbiter panel reward" : 35
+    "$DSWP buyback-burn" : 10
+    "Platform fee" : 5
+```
+
+> Why this split? It funds the arbiters (35%), partially refunds the winner
+> (50%), reduces token supply on every dispute (10%), and keeps the platform
+> share minimal (5%). **Both sides post the same bond** so neither party can
+> grief the other by raising a frivolous dispute for free.
+
+---
+
 1. **Arbitration is irreducible.** A contract can't judge off-chain work quality → some human/oracle judgment
    is unavoidable. The goal is not to remove the judge but to **minimize how often we need one, make rulings
    fair + cheap, escalate proportionately to stakes, never lose funds, and decentralize the trust over time.**

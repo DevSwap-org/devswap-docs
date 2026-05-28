@@ -31,6 +31,28 @@
 > a reputation floor; the spent `$DSWP` is **burned automatically** and the
 > burn is never marketed as a return.
 
+### Buyback-and-burn cycle — every settlement reduces supply
+
+```mermaid
+flowchart LR
+    A["💵 Settlement<br/>completes"] -->|3% fee| B{"Fee split"}
+    B -->|1.5% platform| C["Treasury<br/>(multisig)"]
+    B -->|1.5% buyback| D["Buyback queue"]
+    D -->|Keeper cron<br/>+ slippage limit| E["🥞 PancakeSwap V2<br/>swap USDT → $DSWP"]
+    E --> F["🔥 token.burn()"]
+    F -.->|reduces supply| G[("100M hard cap<br/>→ shrinks")]
+
+    style F fill:#FEE2E2,stroke:#EF4444,color:#1E293B
+    style G fill:#EEF2FF,stroke:#4F46E5,color:#1E293B
+    style D fill:#FEF3C7,stroke:#F59E0B,color:#1E293B
+    style E fill:#FEF3C7,stroke:#F59E0B,color:#1E293B
+```
+
+**Key property:** the burn is *separated* from the developer payout. If the
+PancakeSwap swap fails (no liquidity, slippage breach), the developer's 97%
+still settles immediately — the buyback retries on the next keeper tick.
+Settlement reliability is decoupled from market conditions.
+
 ---
 
 ## 1. What `$DSWP` is — and is not

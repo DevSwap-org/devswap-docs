@@ -27,6 +27,46 @@ This is not a whitepaper promise. It is a phased engineering and legal programme
 sequenced to protect users during the early, fragile period and surrender control progressively as
 the system proves itself.
 
+### How a parameter change reaches production (target: G2 onward)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as 🧑‍💼 Proposer
+    participant S as 🔐 Gnosis Safe (3-of-5)
+    participant T as ⏱️ Zodiac Timelock (48–72h)
+    participant C as ⛓️ DevSwapEscrow
+
+    P->>S: submit parameter change<br/>(e.g., fee, arbiter cooldown, panel size)
+    Note over S: 3 of 5 signers approve<br/>(Ledger HW wallets)
+    S->>T: queue execution
+    Note over T: 48–72h public window<br/>users observe + exit if disagree
+    T->>C: execute on-chain change
+    C-->>P: state updated · event emitted
+```
+
+**Why a timelock matters.** The window between Safe-approval and on-chain
+execution is the user's escape hatch. If a proposed change is hostile, users
+have time to withdraw their open milestones before it takes effect. The
+protocol's hardcoded floors (e.g. the **immutable 3% fee cap**) close off the
+worst hostile changes entirely — they cannot be proposed at all.
+
+### Decentralization phases (G0 → G4)
+
+```mermaid
+flowchart LR
+    G0["G0 — bootstrap<br/>owner key<br/>(today, testnet)"] --> G1["G1 — mainnet launch<br/>3-of-5 multisig<br/>+ 48h timelock"]
+    G1 --> G2["G2 — staked arbiters<br/>panel voting live<br/>(V2.4 — done)"]
+    G2 --> G3["G3 — DAO Tier-2<br/>policy votes<br/>(qualification, panel size)"]
+    G3 --> G4["G4 — full DAO<br/>founder key revoked<br/>governance owns all"]
+
+    style G0 fill:#FEE2E2,stroke:#EF4444,color:#1E293B
+    style G1 fill:#FEF3C7,stroke:#F59E0B,color:#1E293B
+    style G2 fill:#EEF2FF,stroke:#4F46E5,color:#1E293B
+    style G3 fill:#DCFCE7,stroke:#10B981,color:#1E293B
+    style G4 fill:#DCFCE7,stroke:#10B981,color:#1E293B
+```
+
 ---
 
 ## 2. Why Full Decentralization?
