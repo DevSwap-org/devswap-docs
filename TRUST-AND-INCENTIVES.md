@@ -1,32 +1,13 @@
-# DevSwap — Trust, Incentives & Decentralization (strategy/design)
+# DevSwap — Trust, Incentives & Decentralization (strategy / design)
 
-> **What this is.** A *strategy/design* doc (peer to [`DISPUTE-RESOLUTION.md`](DISPUTE-RESOLUTION.md),
-> [`TOKENOMICS.md`](TOKENOMICS.md), [`competitive/MOAT.md`](competitive/MOAT.md)) answering seven owner
-> questions that span four design areas: **(A) arbitration economics** (juror availability, fallback,
-> how the arbiter is paid, penalties for a wrong party), **(B) on-platform communication, file exchange &
-> anti-disintermediation**, **(C) `$DSWP` demand-side utility & in-platform marketing** (with a permanent
-> free tier), and **(D) decentralized developer verification**.
+> **What this is.** A strategy / design document (peer to [`DISPUTE-RESOLUTION.md`](DISPUTE-RESOLUTION.md), [`TOKENOMICS.md`](TOKENOMICS.md)) answering seven design questions that span four areas: **(A) arbitration economics** (juror availability, fallback, how the arbiter is paid, penalties for a wrong party), **(B) on-platform communication, file exchange & anti-disintermediation**, **(C) `$DSWP` demand-side utility & in-platform marketing** (with a permanent free tier), and **(D) decentralised developer verification**.
 >
-> **Status: analysis + plan only — no contract/web code changed.** Every mechanism here is future work,
-> **TDD + audit + owner-ratified** (mainnet behind the **P5** gate); each becomes its own ADR when
-> ratified. Reserved: **ADR-0016** (token demand utility), **ADR-0017** (messaging + anti-disintermediation),
-> **ADR-0018** (decentralized verification). Arbitration phases keep their reserved **ADR-0010..0015**
-> ([`DISPUTE-RESOLUTION.md §6`](DISPUTE-RESOLUTION.md)).
-> **All 7 owner-decision forks ratified (2026-05-24).** See `STATE.md` log entry for exact values.
-> **Governance layer:** The long-term goal is to move all parameters in this doc to DAO on-chain governance.
-> See [`GOVERNANCE.md`](GOVERNANCE.md) for the G0→G4 decentralization roadmap + 3-tier timelock architecture.
-> At G3+, Tier-1/Tier-2 votes replace owner-ADR ratification for every parameter in Areas A–D.
+> **Status: analysis + plan only — no contract / web code changed.** Every mechanism here is future work, TDD + audit + governance-ratified (mainnet behind the gates in [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md)); each becomes its own ADR when ratified. Reserved: **ADR-0016** (token demand utility), **ADR-0017** (messaging + anti-disintermediation), **ADR-0018** (decentralised verification). Arbitration phases keep their reserved **ADR-0010 .. 0015** ([`DISPUTE-RESOLUTION.md §6`](DISPUTE-RESOLUTION.md)).
+> All 7 design forks were ratified in May 2026. The values they fixed are documented in the relevant ADRs.
+> **Governance layer.** The long-term goal is to move all parameters in this document to DAO on-chain governance. See [`GOVERNANCE.md`](GOVERNANCE.md) for the G0 → G4 decentralisation roadmap + 3-tier timelock architecture. At G3+, Tier-1 / Tier-2 votes replace ADR ratification for every parameter in Areas A – D.
 >
-> **Constraints (do not drift):** **non-custodial** (the smart contract + parties + independent
-> attesters/arbiters bear risk, not "we" — [ADR-0006](decisions/ADR-0006-non-custodial-positioning.md));
-> **validate-first** (`$DSWP` deferred until GMV is proven — [`TOKENOMICS.md §9`](TOKENOMICS.md); all of
-> area C is therefore a **post-token-launch** phase); **securities-safe** (no staking-for-yield / farming /
-> vaults / price-appreciation promise — [`TOKENOMICS.md §8`](TOKENOMICS.md)); fee **3% (1.5% platform +
-> 1.5% buyback), dev 97%** (§17); UI copy **§18-safe**; en/ar parity. **This is mechanism design, NOT legal
-> advice** — independent digital-asset counsel before mainnet is deferred-but-mandatory.
-> Recommendations are tagged **design inference / engineering judgment**; external protocols (Kleros, UMA,
-> EAS, Human Passport, etc.) are referenced as **mechanism categories** for orientation, each requiring its
-> own due-diligence + audit before adoption.
+> **Constraints (do not drift):** **non-custodial** (the smart contract + parties + independent attesters / arbiters bear risk, not "we" — see [`ADR-0006`](adr/ADR-0006-non-custodial-positioning.md)); **validate-first** (`$DSWP` deferred until GMV is proven — [`TOKENOMICS.md`](TOKENOMICS.md); all of Area C is therefore a *post-token-launch* phase); **securities-safe** (no staking-for-yield / farming / vaults / price-appreciation promise — [`TOKENOMICS.md`](TOKENOMICS.md)); fee **3 % (1.5 % platform + 1.5 % buyback), dev 97 %**; UI copy avoids custody / guarantee / refund language; en / ar parity. **This is mechanism design, NOT legal advice** — independent digital-asset counsel before mainnet is deferred-but-mandatory.
+> Recommendations are tagged **design inference / engineering judgment**; external protocols (Kleros, UMA, EAS, Human Passport, etc.) are referenced as mechanism categories for orientation, each requiring its own due-diligence + audit before adoption.
 
 ---
 
@@ -94,9 +75,7 @@ This is the key clarification. **The 97/1.5/1.5 split is the *happy-path settlem
   constant** that **does not** alter the headline "97% to the developer" for normal settlements — and the
   §17 consistency cascade must document it as a *dispute fee*, not the settlement fee. **Owner fork.**
 
-**Why not from the 97%:** taxing the developer's normal earnings to fund a dispute machine they may never
-use is both unfair and bad for the "97% to the dev" wedge ([MOAT Wedge 1](competitive/MOAT.md)). The
-polluter pays. *(Maps to DISPUTE-RESOLUTION §4.2 + §4.5; lands in A3/A4.)*
+**Why not from the 97 %:** taxing the developer's normal earnings to fund a dispute machine they may never use is both unfair and undermines the "97 % to the dev" headline. The polluter pays. *(Maps to [`DISPUTE-RESOLUTION.md §4.2 + §4.5`](DISPUTE-RESOLUTION.md); lands in A3 / A4.)*
 
 ## A.4 Penalty when the **developer** is proven wrong (Q1)
 
@@ -131,26 +110,15 @@ Protecting the dev from **extortion-by-dispute** is symmetric and is the main re
 
 # Area B — Communication, file exchange & anti-disintermediation (Q2, Q3 comms)
 
-> **Honest framing first.** In a non-custodial model you have **surrendered the strongest retention lever**
-> (withholding funds). Web2 contact-masking and ToS off-platform bans are, per the research, **largely
-> theater** — bypassed by users and damaging to trust (Sharetribe), and near-unenforceable against
-> pseudonymous wallets. Pretending we can *prevent* disintermediation would be dishonest. The realistic goal
-> is to make the **on-platform path strictly dominant** and accept some leakage on one-off small deals while
-> winning repeat + high-value work. *(Sources: `upwork.md:360/852-858`, Sharetribe leakage guide, INFORMS
-> 2025; Web3 precedent: Braintrust, TalentLayer/Kleros.)*
+> **Honest framing first.** In a non-custodial model the protocol has **surrendered the strongest retention lever** (withholding funds). Web2 contact-masking and ToS off-platform bans are, per the published research, largely theatre — bypassed by users and damaging to trust, and near-unenforceable against pseudonymous wallets. Pretending we can *prevent* disintermediation would be dishonest. The realistic goal is to make the **on-platform path strictly dominant** and accept some leakage on one-off small deals while winning repeat + high-value work. *(Public sources: Sharetribe marketplace-leakage guide; INFORMS 2025 marketplace dynamics survey. Web3 precedent: Braintrust, TalentLayer / Kleros.)*
 
 ## B.1 How the two parties talk **on-platform** (Q2)
 
-In-app messaging is currently **deferred** ("Chat deferred — needs messaging backend",
-[`STATE.md`](../STATE.md):109). Design when built (→ **ADR-0017**):
-- **Threaded, milestone-linked, searchable** messaging tied to the job ID — it must genuinely *beat*
-  WhatsApp/email (in-context links to the milestone, deliverable, and the funding tx), not merely restrict.
-  *(upwork.md:2029-2034.)* This is the carrot: the conversation lives next to the money and the evidence.
-- **Storage:** off-chain (Supabase, the existing mirror) with **optional E2E encryption**; only a **message-
-  thread hash** need ever touch chain (as dispute evidence). Keeps it cheap and private.
-- **Optional in-app video** for scoping calls *(upwork.md:2021)* — later.
-- **Identity reveal timing:** reveal contact identities **at contract start, not before** *(upwork.md:362)* —
-  so the escrow carrot is locked in *before* contact details change hands.
+In-app messaging is on the roadmap as **ADR-0017** (planned). Design intent when built:
+- **Threaded, milestone-linked, searchable** messaging tied to the job ID — it must genuinely *beat* WhatsApp / email (in-context links to the milestone, deliverable, and the funding tx), not merely restrict it. This is the carrot: the conversation lives next to the money and the evidence.
+- **Storage:** off-chain (Supabase, the existing mirror) with **optional E2E encryption**; only a **message-thread hash** need ever touch chain (as dispute evidence). Keeps it cheap and private.
+- **Optional in-app video** for scoping calls — later.
+- **Identity-reveal timing:** reveal contact identities **at contract start, not before** — so the escrow carrot is locked in *before* contact details change hands.
 
 ## B.2 File / deliverable exchange (Q2)
 
@@ -315,11 +283,9 @@ core-product usage, not artificial.)
 
 ---
 
-# Area E — Platform liability & decentralization posture (Q4)
+# Area E — Platform liability & decentralisation posture (Q4)
 
-> Foundation: [ADR-0006](decisions/ADR-0006-non-custodial-positioning.md) (non-custodial positioning) +
-> CLAUDE.md §18. **This is positioning + progressive decentralization, not a magic disclaimer; counsel
-> before mainnet is mandatory.**
+> Foundation: [`ADR-0006`](adr/ADR-0006-non-custodial-positioning.md) (non-custodial positioning) + the project's legal-safe language policy. This is positioning + progressive decentralisation, not a substitute for legal review; qualified counsel before mainnet is mandatory.
 
 How DevSwap limits its responsibility *honestly* (each maps to an area above):
 1. **Funds:** the **smart contract** holds/releases USDT — not the company ("we don't hold or process
@@ -357,42 +323,22 @@ How DevSwap limits its responsibility *honestly* (each maps to an area above):
 
 ---
 
-## Owner-decision forks (need ratification before the relevant phase)
+## Design forks (need ratification before the relevant phase)
 
-1. **Arbitration fee model (A.3):** loser-funded deposit only, *or* deposit + a small dispute-only
-   `ARBITRATION_FEE_BPS` slice of the disputed milestone? (If the latter, document as a **dispute fee**, not
-   the settlement fee, in the §17 cascade.) → ADR-0012/0013.
-2. **No-arbiter fallback (A.2):** deterministic **return-to-client** floor only, or also an optional
-   **multisig emergency arbiter**? → ADR-0014.
-3. **Spent-`$DSWP` destination (C.3) — legal-sensitive:** auto-burn-on-spend (recommended) vs treasury vs
-   (reject) holder-redistribution. → ADR-0016 + counsel.
-4. **Boost market (C.2):** fixed-price start (recommended) vs auction; multiplier cap + reputation-floor
-   values; promoted-slots-per-page cap. → ADR-0016.
-5. **Arbiter/juror stake-to-be-eligible (C.4) — legal-sensitive:** is stake-to-work acceptable framing, or
-   keep arbiters unstaked-appointed longer? → ADR-0013 + counsel.
-6. **Verification economics (D.2):** confirm **rejecting** "subject-pays-verifier + platform-cut" in favor of
-   **stake-backed slash-on-fraud**; whether to build the peer-attestation tier at all vs rely on the
-   on-chain-work-history credential. → ADR-0018.
+1. **Arbitration fee model (A.3):** loser-funded deposit only, *or* deposit + a small dispute-only `ARBITRATION_FEE_BPS` slice of the disputed milestone? (If the latter, document as a **dispute fee**, not the settlement fee, in the consistency cascade.) → ADR-0012 / 0013.
+2. **No-arbiter fallback (A.2):** deterministic **return-to-client** floor only, or also an optional **multisig emergency arbiter**? → ADR-0014.
+3. **Spent-`$DSWP` destination (C.3) — legal-sensitive:** auto-burn-on-spend (recommended) vs treasury vs (reject) holder-redistribution. → ADR-0016 + counsel.
+4. **Boost market (C.2):** fixed-price start (recommended) vs auction; multiplier cap + reputation-floor values; promoted-slots-per-page cap. → ADR-0016.
+5. **Arbiter / juror stake-to-be-eligible (C.4) — legal-sensitive:** is stake-to-work acceptable framing, or keep arbiters unstaked-appointed longer? → ADR-0013 + counsel.
+6. **Verification economics (D.2):** confirm rejecting "subject pays verifier + platform takes a cut" in favour of **stake-backed slash-on-fraud**; whether to build the peer-attestation tier at all vs rely on the on-chain-work-history credential. → ADR-0018.
 7. **Messaging stack (B.1):** Supabase off-chain + optional E2E; how much (if any) to anchor on-chain. → ADR-0017.
 
 ---
 
 ## Evidence basis & honesty note
 
-- **Restated from shipped/decided (not inference):** A0 arbiter baseline (ADR-0003 + `DevSwapEscrowV2_1`);
-  the 97/1.5/1.5 split + buyback-burn + securities-safe + validate-first (`TOKENOMICS.md`); non-custodial
-  positioning (ADR-0006); the existing wallet↔GitHub binding + on-chain reputation counters (STATE IDX-2 /
-  ADR-0003); chat is deferred (STATE:109); `commitmentsAbandoned` (ADR-0009).
-- **Design inference / engineering judgment (labeled in-text):** all of Areas A.1–A.5, B, C, D, E
-  recommendations; every numeric (deposits, multiplier caps, timeouts, slot caps, fee bps) is **illustrative**,
-  to be set per-ADR with tests.
-- **External protocols** (Kleros, UMA, EAS, Human Passport, World ID, Braintrust, TalentLayer, BrightID, PoH)
-  are referenced as **well-known mechanism categories** for orientation — **not** cited specifics; any
-  integration requires its own up-to-date due-diligence + audit. Competitor facts carry `fiverr.md`/`upwork.md`
-  line cites.
-- **The hard truths:** (1) non-custodial means you **cannot fully prevent disintermediation** — retention is
-  carrots + reputation, not coercion. (2) Arbitration is the **main residual centralization**; full
-  trustlessness is a journey. (3) Any token-demand mechanic carries **securities exposure** — consumptive +
-  no-yield-framing + counsel is the mitigation, not a guarantee.
-- **Status:** analysis + plan only. **No contract/web code changed.** Each phase is owner-ratified (its ADR)
-  and audit-gated; mainnet remains behind P5 (audit + owner→multisig + timelock + LP lock).
+- **Restated from shipped / decided (not inference):** A0 arbiter baseline ([`ADR-0003`](adr/ADR-0003-arbiter-hardening.md) + the verified `DevSwapEscrowV2_6` source); the 97 / 1.5 / 1.5 split + buyback-burn + securities-safe + validate-first ([`TOKENOMICS.md`](TOKENOMICS.md)); non-custodial positioning ([`ADR-0006`](adr/ADR-0006-non-custodial-positioning.md)); the existing wallet ↔ GitHub binding + on-chain reputation counters; `commitmentsAbandoned` ([`ADR-0009`](adr/ADR-0009-funding-trigger.md)).
+- **Design inference / engineering judgment (labelled in-text):** all of Areas A.1 – A.5, B, C, D, E recommendations; every numeric (deposits, multiplier caps, timeouts, slot caps, fee bps) is **illustrative**, to be set per-ADR with tests.
+- **External protocols** (Kleros, UMA, EAS, Human Passport, World ID, Braintrust, TalentLayer, BrightID, PoH) are referenced as well-known mechanism categories for orientation — **not** cited specifics; any integration requires its own up-to-date due-diligence + audit. Competitor practices are referenced as category exemplars only.
+- **The hard truths.** (1) Non-custodial means the protocol cannot fully prevent disintermediation — retention is carrots + reputation, not coercion. (2) Arbitration is the main residual centralisation; full trustlessness is a journey. (3) Any token-demand mechanic carries securities exposure — consumptive design + no-yield framing + counsel is the mitigation, not a guarantee.
+- **Status.** Analysis + plan only. No contract / web code changed. Each phase is governance-ratified (its ADR) and audit-gated; mainnet remains behind the audit + multisig + timelock + LP-lock gates.

@@ -1,11 +1,8 @@
 # Architecture
 
-DevSwap is a P2P decentralized marketplace for software services on **BNB Smart
-Chain (BSC)**, settled in **USDT** escrow, with a platform utility token
-**$DSWP** reduced via a separated **buyback-and-burn** mechanism.
+DevSwap is a non-custodial peer-to-peer marketplace for software services on **BNB Smart Chain (BSC)**, settled in **USDT** escrow, with a protocol utility token **`$DSWP`** reduced via a separated **buyback-and-burn** mechanism.
 
-> Source-of-truth order on any conflict: `STATE.md` > `PLAN.md` > `TASKS.md` >
-> this file > prior knowledge.
+> For source-of-truth order on contract behaviour, see the verified contracts in [`devswap-contracts`](https://github.com/DevSwap-org/devswap-contracts) — the bytecode is the canonical reference; this document is descriptive.
 
 ## System diagram (logical)
 
@@ -86,17 +83,14 @@ move on signed transactions.
   funds.
 - The keeper can only trigger the already-permissioned buyback path; it cannot
   redirect payouts.
-- Admin (owner) actions are limited to dispute resolution + safety toggles
-  (pause, auto-buyback enable, slippage), all guarded by `Ownable2Step`.
+- The `owner` role is limited to safety toggles (pause, auto-buyback enable, slippage) and arbiter-pool parameters, all guarded by `Ownable2Step`. From V2.4+ disputes are resolved by a randomly-drawn 3-arbiter panel, not by the `owner`.
 
 ## Data flow: task lifecycle
 
 1. Client posts a task → USDT pulled into escrow (`TaskCreated`).
 2. Developer accepts (`TaskAccepted`) → submits delivery (`TaskSubmitted`).
-3. Client releases (or timeout) → `FundsReleased`: 97% dev, 1.5% fee, 1.5%
-   buyback (burned inline or deferred). Disputes route through the owner panel.
+3. Client releases (or timeout) → `FundsReleased`: 97 % dev, 1.5 % fee, 1.5 % buyback (burned inline or deferred). Disputes route through a stake-weighted 3-arbiter panel drawn from `DevSwapArbiterPool`.
 4. Subgraph indexes each event; web reads list/detail/stats from it; push
    notifications fire from indexed events (per-user path blocked on Supabase).
 
-See `docs/CONTRACTS.md` for the contract-level detail and `docs/SECURITY.md` for
-the threat model.
+See [`CONTRACTS.md`](CONTRACTS.md) for contract-level detail and [`SECURITY.md`](SECURITY.md) for the threat model.

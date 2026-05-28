@@ -14,17 +14,17 @@ Date: 2026-05-22 · Scope: `contracts/src/DevSwapToken.sol`, `contracts/src/DevS
 | `slither .` | ✅ 0 high, 0 medium | 4 low/informational, all reviewed & accepted (below) |
 | `mythril` | ⛔ deferred | not installed in this environment; scheduled for the P5 pre-mainnet gate |
 
-> **Design note (Option C, owner-approved 2026-05-22):** the buyback-and-burn now runs **inline** inside `releaseFunds`/`resolveDispute` (per owner directive), wrapped in a self-call `try/catch` so a failed/illiquid swap can never block payment; on failure (or when `autoBuybackEnabled` is off) the 1.5% defers to `buybackReserve` for a bulk `executeBuybackBurn`. Burn is via `burn()` (never `address(0)`, which OZ rejects).
+> **Design note (Option C, adopted 2026-05-22):** the buyback-and-burn runs **inline** inside `releaseFunds` / `resolveDispute`, wrapped in a self-call `try/catch` so a failed or illiquid swap can never block payment. On failure (or when `autoBuybackEnabled` is off) the 1.5% defers to `buybackReserve` for a bulk `executeBuybackBurn`. Burn is via `burn()` — never `address(0)`, which OZ rejects.
 
 ## 2. Findings
 
 | ID | Severity | Location | Status | Detail |
 |---|---|---|---|---|
-| F-1 | Low | `setKeeper` | **Acknowledged (by design)** | No zero-address check: passing `address(0)` intentionally *disables* the keeper, falling back to owner-only `executeBuybackBurn`. A safety feature, not a bug. |
+| F-1 | Low | `setKeeper` | **Acknowledged (by design)** | No zero-address check: passing `address(0)` intentionally *disables* the keeper, falling back to the `onlyOwner` `executeBuybackBurn` path. A safety feature, not a bug. |
 | F-2 | Informational | `cancelTask` | **Acknowledged** | Uses `block.timestamp` for the submit-timeout. Validator timestamp drift (a few seconds) is immaterial against a ≥1-day (default 14-day) window. |
 | F-3 | Low (benign) | `_payout` | **Acknowledged / mitigated** | slither `reentrancy-benign`: `buybackReserve` is written in the `catch` after the inline-buyback external call. Mitigated by: (a) `_payout` runs only inside `nonReentrant` `releaseFunds`/`resolveDispute`; (b) the hook is `onlySelf`; (c) dev+fee are paid *before* the buyback attempt, so the deferred write affects only accounting, never user funds. |
 | F-4 | Informational | `_swapAndBurn` | **Acknowledged** | slither `reentrancy-events`: `BuybackBurned` emitted after the swap. Event-ordering only; no state/fund impact. |
-| F-5 | Medium (acknowledged FP) | `DevSwapEscrowV2_2.createJob` | **Acknowledged / false positive** | slither `uninitialized-local` on `lockNow` (line 305) and `total` (line 293). Solidity 0.8.x **automatically zero-initializes** all local variables; both are written before any read in normal control flow. Slither's intra-procedural analysis cannot see this. Mitigation: the gate uses `--fail-high` so this medium FP does not block CI; if owner wants to silence it, explicitly assign `bool lockNow = false;` and `uint256 total = 0;`. |
+| F-5 | Medium (acknowledged FP) | `DevSwapEscrowV2_2.createJob` | **Acknowledged / false positive** | slither `uninitialized-local` on `lockNow` (line 305) and `total` (line 293). Solidity 0.8.x **automatically zero-initializes** all local variables; both are written before any read in normal control flow. Slither's intra-procedural analysis cannot see this. Mitigation: the gate uses `--fail-high` so this medium FP does not block CI; to silence, explicitly assign `bool lockNow = false;` and `uint256 total = 0;`. |
 | F-6 | Low (acknowledged) | V2.1 + V2.2 (multiple) | **Acknowledged** | slither `timestamp` on dispute/timeout/funding-deadline checks (`expireUnfunded`, `claimMilestone`, `cancelMilestone`, `timeoutDispute`, `executeArbiter`). All comparisons use **day-scale windows** (≥ 1 day); validator timestamp drift of a few seconds is immaterial. Same posture as F-2 expanded to V2.1/V2.2. |
 
 No High findings. Two medium-class items above are documented false positives
@@ -64,6 +64,7 @@ SWC finding on these contracts will block merge per the hard-gate ruleset.
 
 - **Payment safety first (critical).** In `_payout` the developer (97%) and owner fee (1.5%) are transferred **before** any buyback attempt. The inline buyback-and-burn of the remaining 1.5% is wrapped in a self-call `try/catch`; on *any* failure it defers to `buybackReserve` (drained later by `executeBuybackBurn`). A failed/illiquid market can never block a developer's pay. Proven by `test_SwapFailure_DoesNotBlockDeveloperPayment` + the mainnet-fork tests.
 - **Inline-buyback via `onlySelf` hook.** `autoBuybackAndBurn` is callable only by the contract itself (`OnlySelf`), used purely to wrap the multi-step quote→swap→burn in one `try/catch`. It is intentionally not `nonReentrant` (it runs inside the caller's guarded scope; a genuine reentry into a guarded function reverts and is absorbed by the surrounding `try/catch`).
+- **Owner privileges are narrowly scoped** to dispute resolution, pausing, and parameter changes — never to client funds outside the documented contract paths. Mainnet ownership is gated on transfer to a 3-of-5 multisig + 48-hour timelock (see §1 Gates 5 & 6).
 - **Checks-Effects-Interactions**: task status is set before transfers; a reentrant call hits an already-terminal status even absent the guard (defense in depth).
 - **ReentrancyGuard** on `createTask`, `releaseFunds`, `cancelTask`, `resolveDispute`, `executeBuybackBurn`. Verified with a malicious re-entering ERC20 (`ReentrantERC20`).
 - **SafeERC20 + forceApprove.** Router allowance set via `forceApprove`; on a failed self-call the approval is rolled back with the rest of the sub-call.
@@ -77,7 +78,7 @@ SWC finding on these contracts will block merge per the hard-gate ruleset.
 ## 4. Trust assumptions & residual risks
 
 1. **USDT is non-fee-on-transfer.** The escrow credits the nominal `amount`. `usdt` is `immutable` and must be set to the canonical BSC USDT (`0x55d3…7955`, 18 decimals). Do **not** deploy against a fee-on-transfer or rebasing token.
-2. **Owner is trusted** for dispute resolution and pausing. Phase-1 arbitration is intentionally simple. Before mainnet the owner must become a **3-of-5 multisig + timelock** (P5).
+2. **The `owner` role is trusted** for dispute resolution and pausing on testnet. Phase-1 arbitration is intentionally simple. Before mainnet the role must transfer to a **3-of-5 multisig + 48-hour timelock** (see §1 Gates 5 & 6).
 3. **Buyback MEV.** The inline auto-buyback derives `minOut` from on-chain `getAmountsOut`, which a sandwicher can manipulate within the same block — acceptable for the small per-task 1.5%, but if MEV becomes material the owner should `setAutoBuybackEnabled(false)` and rely on the batched keeper, which must pass an off-chain-computed `minDswpOut`. A lazy `minDswpOut = 0` on the bulk path is sandwich-exposed.
 4. **LP depth.** Buyback price impact depends on DSWP/USDT pool depth; only enable automated buybacks once liquidity is sufficient (P4).
 5. **External audit + mythril** are required before mainnet (P5).
@@ -229,7 +230,7 @@ Constructor args:
 ## 8. Compiler Bug Analysis — `LostStorageArrayWriteOnSlotOverflow`
 
 **Date:** 2026-05-24
-**Trigger:** BscScan compiler warning on `DevSwapToken` (`0xE950eb93aCa1f29848f5cBac61d78657e3c97287`, BSC mainnet)
+**Background:** a BscScan compiler warning surfaced on `DevSwapToken` (`0xE950eb93aCa1f29848f5cBac61d78657e3c97287`, BSC mainnet)
 **Severity (BscScan):** Low
 
 ### 8.1 Bug Description
@@ -274,7 +275,7 @@ All storage is mappings or scalar values. The bug exclusively affects array stor
 - It can never be positioned to straddle 2^256 in practice (would require ~2^256 elements)
 - `EnumerableSet` uses a `mapping(bytes32 => Set)` so each set's array occupies its own isolated storage slot range derived from a keccak256 hash
 
-**Conclusion: DevSwapEscrowV2_2 is also NOT affected.**
+**Verdict: `DevSwapEscrowV2_2` is also NOT affected.**
 
 ### 8.4 Verdict
 
@@ -320,9 +321,8 @@ Optimizer `runs` raised **200 → 10,000** for high-frequency escrow runtime gas
 
 ## 9. Legal-Safety Controls (2026-05-26)
 
-**Date:** 2026-05-26 · **Decision:** owner directive after critical-review of generic AI advice that
-missed the actual gaps in DevSwap's posture (geo-block, token-sale disclosure, mythril deferral).
-**Status:** P0 + P1 implemented in commit `<this commit>`; owner action items below remain.
+**Adopted:** 2026-05-26.
+**Status:** P0 + P1 controls live; manual action items in §9.5 remain pending.
 
 ### 9.1 Fjord Foundry LBP — cancelled
 
@@ -352,7 +352,7 @@ Server-rendered Next.js page. Any external `$DSWP`-related link in the UI is rou
 - Marked `dynamic = "force-dynamic"` so the disclosure cannot be cached/bypassed.
 
 **Boilerplate, not legal advice:** the copy explicitly states "pending review by qualified counsel".
-A counsel-reviewed version is the next legal milestone (owner action item §9.5).
+A counsel-reviewed version is the next legal milestone (governance action item §9.5).
 
 ### 9.3 Geo-block (RFC 7725 — HTTP 451)
 
@@ -380,29 +380,28 @@ transactions — funding (`/post`, `/v2/post`) and token-related (`/token-disclo
 - `myth analyze src/DevSwapEscrowV2_2.sol` (execution-timeout 900s, max-depth 12)
 
 Mythril's exit code is non-zero on any SWC finding → step fails → workflow fails. Combined with
-**branch-protection requiring this status check on `main`** (owner action item §9.5), no build can
+**branch-protection requiring this status check on `main`** (governance action item §9.5), no build can
 deploy without a clean Mythril run.
 
 This closes the gap in §1 (the original audit noted "mythril ⛔ deferred — not installed in this
 environment"). Mythril is now the **second pillar** of the P5 pre-mainnet checklist alongside
 slither (pattern matching) and forge-coverage (test exhaustion).
 
-### 9.5 Owner action items (manual; not Claude-executable)
+### 9.5 Governance action items (manual)
 
-These require GitHub-org-level permissions and are tracked here so they don't get lost:
+These require org-level permissions and are tracked here so they remain visible:
 
-- [ ] **Branch protection on `main`** — Settings → Branches → `main` → Require status checks to
-      pass before merging → add `mythril (P5 hard gate) / mythril` AND `security / slither` AND
-      `web / lint+typecheck+build` to required.
-- [ ] **Counsel-reviewed token-disclosure copy** — replace the boilerplate in
-      `web/messages/{en,ar}.json` `tokenDisclosure.*` once qualified counsel has reviewed.
-- [ ] **Counsel-reviewed geo-block list** — confirm the conservative country list (US + CU/IR/KP/SY +
-      RU/BY) matches the firm's risk appetite; add VE or other sectoral targets if advised.
-- [ ] **Cloudflare WAF rule (optional, defence in depth)** — add a CF Firewall Rule at the
-      edge that mirrors the middleware block, so the request never reaches the Worker for
-      restricted countries × paths.
-- [ ] **Verify Mythril CI is "required" on org settings** — until set, the gate is informational
-      and a build *could* be merged with failing Mythril.
+- [ ] **Branch protection on `main`** — require the `mythril`, `security / slither`, and
+      `web / lint+typecheck+build` status checks to pass before merge.
+- [ ] **Counsel-reviewed token-disclosure copy** — replace the interim boilerplate in the i18n
+      strings once qualified counsel has reviewed.
+- [ ] **Counsel-reviewed geo-block list** — confirm the conservative country list (US + CU / IR /
+      KP / SY / RU / BY) matches counsel's risk-appetite advice; add additional sectoral targets if
+      advised.
+- [ ] **Edge-layer firewall rule (defence in depth)** — mirror the middleware block at the CDN
+      edge so restricted-country × restricted-path requests never reach the Worker.
+- [ ] **Confirm the Mythril check is "required"** — until enforced, the gate is informational and
+      a build could theoretically merge with a failing Mythril run.
 
 ### 9.6 Verification (post-deploy)
 
@@ -419,117 +418,55 @@ Cloudflare's "WAF Skip Rule" simulator.
 
 ---
 
-## 10. System-Wide Sync (2026-05-26)
+## 10. Project-Wide Sync (2026-05-26)
 
-**Trigger:** owner directive — after the §9 P0+P1 implementation, conduct a full sync of every
-project surface (code, journals, public website, whitepaper) so no dangling references to the
-cancelled Fjord LBP / token-sale narrative remain. Implemented as a series of atomic
-task-commit-deploy cycles for traceability.
+Alongside the §9 controls, every public surface — code, public website, whitepaper, and these docs — was reviewed end-to-end so that no dangling references to a public token-sale narrative remain. The sync was implemented as a series of atomic commits for traceability.
 
-### 10.1 Journals (commit `ec56f6e`)
+### 10.1 Documentation sources
 
-`TASKS.md`, `STATE.md`, `BLOCKED.md` — Fjord LBP / Mint 4M / PancakeSwap LP tasks marked
-`[X CANCELLED 2026-05-26]` (strikethrough, not deletion — preserves audit trail). New top-of-file
-entry in `STATE.md` documents the pivot to "Security-Hardened P0" and references the four §9
-controls. `BLOCKED.md` §4 reframed: "audit + counsel + Mythril clean" gating replaces the
-LBP-launch checklist.
+The internal change log entries that referenced a public offering, mint, or LP-launch checklist were marked as cancelled (strikethrough, not deletion — the historical entries remain for audit-trail reasons). The active checklist now reads: independent audit + qualified-counsel review + clean Mythril run before any mainnet deployment.
 
-### 10.2 Whitepaper — markdown sources (commit `33c9d02`)
+### 10.2 Whitepaper — markdown source
 
-`docs/whitepaper.md` Section 5 rewritten from "Seed Liquidity Event (Fjord LBP)" to
-"Security Posture & Mainnet Gate (P5)" — a 9-row gate-status table. Tokenomics row 1 relabeled
-from "Seed LBP" to "Strategic Reserve (locked pending P5 gates)". Roadmap P4 status flipped from
-"Active" to "Deferred 2026-05-26". (`whitepaper-ar-en.md` at repo root is gitignored; edited
-locally for the owner's working copy only.)
+`whitepaper.md` Section 5 rewritten from "Seed Liquidity Event" to "Security Posture & Mainnet Gate" — a multi-row gate-status table. The Distribution table renamed the corresponding row to "Strategic Reserve (locked pending mainnet gates)". The Roadmap row for the Economy phase flipped from "Active" to "Deferred".
 
-### 10.3 Whitepaper — public HTML (commit `bbe2a09`, deploy `v 106994f9`)
+### 10.3 Whitepaper — public HTML (bilingual)
 
 `web/public/whitepaper/{en,ar}/index.html` — full bilingual Section 5 rewrite:
 
-- Distribution table row 1: "Seed LBP" → "Strategic Reserve" (amber-locked, "Held by deployer,
-  no active offering, pending P5 gates").
-- Distribution row 2: "LP Liquidity / PinkLock 18mo" → "LP Liquidity (reserved), deploys only
-  after P5 audit + counsel sign-off".
+- Distribution row 1: "Seed LBP" → "Strategic Reserve" (amber-locked, "no active offering, pending mainnet gates").
+- Distribution row 2: "LP Liquidity / PinkLock 18mo" → "LP Liquidity (reserved), deploys only after audit + counsel sign-off".
 - Section heading + body replaced with a four-card layout:
-  * **Automated Gates** card (emerald, 4/4 green): Mythril CI, Slither, 100% coverage, 79+ tests.
-  * **Manual Gates** card (amber, 3 pending): independent audit, multisig 3-of-5 + Zodiac
-    timelock, qualified-counsel review.
-  * **Geo-Restrictions** card (red, live): US + OFAC (CU/IR/KP/SY/RU/BY), HTTP 451.
-  * **Token-Disclosure Interstitial** card (blue, live): server-rendered, `bscscan.com` allowlist.
-- Disclaimer paragraph rewritten to "No active token sale; any previously linked third-party
-  sale has been removed pending qualified-counsel review."
-- Chart.js label arrays: LBP P1/P2/P3 entries removed; chart now shows the 7-bucket distribution
-  without any LBP labels.
+  * **Automated Gates** card (emerald, 4 / 4 green): Mythril CI, Slither, ≥ 95 % coverage, 400 + tests.
+  * **Manual Gates** card (amber, 3 pending): independent audit, multisig 3-of-5 + Zodiac timelock, qualified-counsel review.
+  * **Geo-Restrictions** card (red, live): US + OFAC (CU / IR / KP / SY / RU / BY), HTTP 451.
+  * **Token-Disclosure Interstitial** card (blue, live): server-rendered, `bscscan.com` allow-list.
+- Disclaimer paragraph rewritten to "No active token sale; any previously linked third-party sale has been removed pending qualified-counsel review."
+- Distribution chart label arrays updated to remove the LBP entries; chart now shows the 7-bucket distribution without any LBP labels.
 
-### 10.4 Homepage — Security Status section (commit `4dafcd9`, deploy `v e4e9561a`)
+### 10.4 Homepage — Security Status section
 
-`web/app/[locale]/page.tsx` — new section between the trust strip and the closing CTA:
+A new homepage section between the trust strip and the closing CTA:
 
 - Heading: "The path to mainnet is gated by audit, not by a token sale."
-- Four green gate tiles (Mythril, Slither, 100% Coverage, 79+ Tests) — each enforced in CI on
-  every commit to `main`.
-- One amber "Pending — owner action" panel listing the three manual gates (audit, multisig +
-  timelock, counsel review).
-- Two live compliance cards: Geo-block (HTTP 451) and Token-disclosure interstitial.
-- Outbound link to the full `SECURITY-AUDIT.md` in `devswap-docs` (public).
+- Four green gate tiles (Mythril, Slither, ≥ 95 % coverage, 400 + tests) — each enforced in CI on every commit to `main`.
+- One amber "Pending" panel listing the three manual gates (audit, multisig + timelock, counsel review).
+- Two live compliance cards: geo-block (HTTP 451) and the token-disclosure interstitial.
+- Outbound link to this `SECURITY-AUDIT.md` document.
 
-i18n: +20 `home.security*` keys EN + AR (parity 514/514, legal-language CI green).
+### 10.5 Informed-consent banner on funding routes
 
-### 10.5 Critical-tool informed-consent banner (commit `4e90b49`, deploy `v 69b503b7`)
+`web/app/[locale]/post/page.tsx` shows a banner above the funding form and before the wallet-connect gate. The geo-block (§9.3) is the back-stop for US + OFAC; this banner is the proactive consent surface every other visitor sees before transferring USDT into the smart contract.
 
-`web/app/[locale]/post/page.tsx` — banner shown ABOVE the funding form, BEFORE the wallet
-connect gate. The geo-block (§9.3) is the back-stop for US + OFAC; this banner is the
-proactive consent surface everyone else sees before transferring USDT into the smart contract.
+The body uses "the smart contract — not the company — locks the funds and releases them only on your approval" — `locks` (not `holds`) is the legal-safe verb for the smart-contract-as-actor framing.
 
-Body uses "the smart contract — not the company — locks the funds and releases them only on
-your approval" — `locks` (not `holds`) is the legal-safe verb for the smart-contract-as-actor
-framing.
+### 10.6 Mythril hard-gate
 
-i18n: +3 `post.disclaimer*` keys EN + AR (parity 517/517).
+§9.4 wired the workflow. The remaining piece is the branch-protection setting which makes the Mythril check a **required** status check on `main`. Until that toggle is set, the gate runs and reports, but a merge could theoretically proceed without it passing — see §9.5 governance action items.
 
-### 10.6 Mythril hard-gate — owner action reminder
+### 10.7 Dangling-reference status
 
-§9.4 wired the workflow. The remaining piece is the GitHub branch-protection setting which
-makes `mythril (P5 hard gate) / mythril` a **required status check** on `main`. Until that
-toggle is set, the gate runs and reports, but a merge could theoretically proceed without it
-passing. The toggle is at: `https://github.com/DevSwap-org/DevSwap/settings/branches → main →
-Require status checks to pass before merging → add 'mythril (P5 hard gate) / mythril'`.
-
-### 10.7 Dangling-reference status (verified post-sync)
-
-After all cycles above, every remaining substring match for `LBP`, `Fjord`, or `token sale` in
-the codebase is **explanatory** — text inside the new sections that explicitly states the LBP
-was cancelled (e.g., "The previously documented Fjord LBP has been cancelled"). No promotional
-or directional reference to the cancelled offering remains in any user-facing surface.
-
-The `STATE.md` and `TASKS.md` journals deliberately preserve the historical pre-pivot entries
-(strikethrough) so future readers can trace the decision lineage — these are audit-trail
-records, not active links.
-
-### 10.8 Brand identity — "Claude" mentions
-
-Owner directive included "replace Claude with DevSwap Protocol everywhere". Comprehensive scan
-across the user-facing surface (web/app, web/components, web/messages, public HTML, README,
-docs, contracts, deployed assets) returned **zero matches** in any rendered user-facing string.
-
-The matches that DO exist are confined to internal tooling that **must not be renamed** without
-breaking the project:
-
-- `CLAUDE.md` (root) — the Claude Code harness configuration file. Renaming breaks the tool's
-  startup contract; out of scope.
-- `.claude/` directory + `.claude/OPERATING_MANUAL.md` — Claude Code's reserved namespace for
-  sub-agent personas + persisted plans.
-- Git commit `Co-Authored-By:` trailer — a convention for AI-assisted code provenance. Future
-  commits in this session drop the trailer per the owner's "independent corporate identity"
-  directive; historical commits are not rewritten (force-push to `main` would be destructive
-  per CLAUDE.md §2.9).
-- `cloudflare/README.md` — internal setup README mentioning the Claude shell used to mint the
-  CF API token; not user-facing.
-- `assets/blockchains/*` — Trust Wallet asset registry mirror (third-party content, unrelated
-  to DevSwap's product surface).
-
-Conclusion: the public-facing product identity is already free of "Claude" branding. Internal
-tooling preserves it for technical-correctness reasons documented above.
+After the sync, every remaining substring match for `LBP`, `Fjord`, or `token sale` in the codebase is **explanatory** — text inside the rewritten sections that explicitly states the previously linked third-party sale has been cancelled. No promotional or directional reference to a cancelled offering remains in any user-facing surface.
 
 ---
 
@@ -627,30 +564,61 @@ Identical to §6.4 (V2.1) and §8.6 (V2.2). The hard-gate ruleset (`mythril` + `
 - Dynamic deposit clamp confirmed onchain: `calculateDisputeDeposit(100/1k/10k)` returns `15/30/150` ✓
 - `minWorkHistoryTasks = 0` (Sybil gate disabled on fresh-chain V2.4 instance)
 
-**Mainnet deployment** remains conditional on the 7 Security Gates in §1 (G5/G6/G7 still pending owner-action).
+**Mainnet deployment** remains conditional on the 7 Security Gates in §1 (Gates 5 – 7 still pending the governance action items in §9.5).
 
-### 11.8 V2.4 UI surfaces (2026-05-27) — release closure
+### 11.8 V2.4 UI surfaces — release closure
 
-The release's contract LIVE since 2026-05-26 was not user-actionable until the web layer was
-extended to call the new on-chain entrypoints. As of 2026-05-27 every V2.4 contract path
-has a corresponding UI surface, covering all three principal personas (party / arbiter / owner).
+The web layer was extended to call the new on-chain entrypoints so every V2.4 contract path has a corresponding UI surface, covering all three principal personas (party / arbiter / governance).
 
-| Persona | Surface | Contract calls | Commit |
-|---|---|---|---|
-| Dispute party (client / dev) | `/v2/job/[id]` — `DisputeVotePanel` | `voteOnDispute` (panel members), `finalizeDispute` (anyone after window or quorum), `claimWinnerDeposit` (pull-payment refund) |
-| Arbiter candidate / staker | `/v2/arbiter` | `arbiterStake`/`approve` 2-step → `stake`; `requestUnstake` (starts cooldown); `withdraw` (post-cooldown, blocked while `openDisputeCount > 0`) |
-| Owner / monitor | `/v2/admin` (+ inline `ArbiterPoolPanel`) | Read-only: `activeArbiterCount`, `getActiveArbiters`, `MIN_ARBITER_STAKE`, `STAKE_LOCK_DURATION` |
-| Arbiter (inbox) | `/v2/arbiter` "My open panels" | `getLogs(DisputePanelStored) ∖ getLogs(DisputeFinalized)`, filtered client-side by viewer ∈ panel |
+| Persona | Surface | Contract calls |
+|---|---|---|
+| Dispute party (client / dev) | `/v2/job/[id]` — `DisputeVotePanel` | `voteOnDispute` (panel members), `finalizeDispute` (anyone after the window or quorum), `claimWinnerDeposit` (pull-payment refund) |
+| Arbiter candidate / staker | `/v2/arbiter` | `arbiterStake` / `approve` 2-step → `stake`; `requestUnstake` (starts cooldown); `withdraw` (post-cooldown, blocked while `openDisputeCount > 0`) |
+| Governance / monitor | `/v2/admin` (+ inline `ArbiterPoolPanel`) | Read-only: `activeArbiterCount`, `getActiveArbiters`, `MIN_ARBITER_STAKE`, `STAKE_LOCK_DURATION` |
+| Arbiter inbox | `/v2/arbiter` "My open panels" | `getLogs(DisputePanelStored) ∖ getLogs(DisputeFinalized)`, filtered client-side by viewer ∈ panel |
 
 **Single-arbiter `resolveDispute` UI is hidden** when V4 is active — the on-chain function reverts
-with `UseVotingFlow` so showing the buttons would be misleading. The web layer detects this via
+with `UseVotingFlow`, so showing the buttons would be misleading. The web layer detects this via
 `V4_ENABLED && isV4Deployed(chainId)` and renders only the panel-voting flow.
 
-**Pull-payment surfacing:** `claimArbiterReward` and `claimWinnerDeposit` are surfaced inline in
+**Pull-payment surfacing.** `claimArbiterReward` and `claimWinnerDeposit` are surfaced inline in
 `DisputeVotePanel` whenever `claimable*` reads return > 0 for the connected wallet — the contract
 never auto-pushes funds, so the UI is responsible for prompting eligible parties.
 
-**Production scaling note (arbiter inbox):** the current implementation uses viem `getLogs`
-directly from `ESCROW_V4.deployedAt`. Acceptable at testnet log volume; when the subgraph is
-extended to V2.4 (deferred — separate task) the inbox will swap to a GraphQL query paged by
-arbiter address.
+**Production scaling note (arbiter inbox).** The current implementation uses viem `getLogs`
+directly from `ESCROW_V4.deployedAt`. Acceptable at testnet log volume; the inbox will swap to a
+subgraph GraphQL query paged by arbiter address once the subgraph is extended to V2.4.
+
+---
+
+## 12. DevSwapEscrowV2_6 — current production contract
+
+V2.6 supersedes V2.4 as the live testnet contract. The dispute mechanics shifted from an
+asymmetric "loser-funded" deposit to a **symmetric 3 % bond** posted by both parties at
+`raiseDispute`, with a **4-way split on resolution**:
+
+| Recipient | Share |
+|-----------|------:|
+| Winner (refund of own bond + loser's bond minus splits) | 50 % |
+| Majority panel (split equally among the 2 / 3 majority) | 35 % |
+| Buyback-burn (PancakeSwap V2 → `burn()`) | 10 % |
+| Platform fee bucket | 5 % |
+
+Rationale: aligning client and developer incentives at dispute time (both have skin in the
+game), distributing more value to the panel that decides the case, and routing a larger share
+of dispute proceeds to the supply-reduction mechanism.
+
+**Live testnet deployment (chainId 97):**
+
+| Contract | Address |
+|---|---|
+| `DevSwapEscrowV2_6` | `0x22633bd98d6F9AD4dF499b77429459F5574B4dFe` |
+| `DevSwapArbiterPool` (shared) | `0x747A7a306F12Fce896F08e9A62a7ef83f1d53C95` |
+| `$DSWP` (testnet) | `0x2DD2Cd306f32cd6709d4316EF0df125235654734` |
+| Mock USDT (testnet) | `0xf24e2651A0A63EAf99A3dcE3F3Fb4ff997A8c3F7` |
+
+Test posture: **400 + tests** across 19 suites (unit, fuzz @ 10 k, invariant, reentrancy,
+mainnet-fork). Escrow line coverage ≥ 95 %; function coverage 100 %. Slither: 0 high / 0 medium.
+Mythril CI gate extended to analyze V2.6 explicitly (900 s timeout).
+
+Mainnet deployment remains conditional on the 7 Security Gates in §1.

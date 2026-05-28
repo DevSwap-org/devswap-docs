@@ -2,14 +2,11 @@
 
 - **Status:** Accepted
 - **Date:** 2026-05-22
-- **Deciders:** Maintainer team
 - **Supersedes:** —
 
 ## Context
 
-The DevSwap Master Execution Prompt (v2) assumes a monorepo layout
-(`apps/web`, `packages/contracts`, `packages/subgraph`, …) and instructs the
-agent to read the structure before writing rather than assume it.
+The original project plan assumed a workspace layout (`apps/web`, `packages/contracts`, `packages/subgraph`, …). In practice, the repository was already live with a flat, folder-per-project structure.
 
 The repository already exists and is **live**:
 
@@ -30,7 +27,7 @@ There is **no root `package.json`** and no workspace manager. The repo is a
 **Keep the existing flat structure.** Do not restructure to `apps/*` +
 `packages/*`.
 
-Map the prompt's intended layout onto the existing folders:
+Map the original layout onto the existing folders:
 
 | Prompt (assumed)        | This repo (actual)         |
 |-------------------------|----------------------------|

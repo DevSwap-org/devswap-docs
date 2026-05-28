@@ -11,14 +11,10 @@ DevSwap's web app (Next.js 14 App Router, next-intl) deployed to **Vercel** (aut
 Root Directory `web`). DNS already runs through **Cloudflare** (zone `devswap.pro`, proxied → Vercel
 origin). Two pressures motivated a full move to Cloudflare:
 
-1. **Operational:** the Vercel **free-tier daily build rate-limit** repeatedly blocked live deploys
-   (STATE.md), stalling the live site behind CI-green `main`.
-2. **Consolidation:** DNS, WAF, caching, and analytics already live on Cloudflare — running the app
-   runtime on the same platform removes a hop (CF → Vercel origin) and unifies edge + app.
+1. **Operational:** the Vercel **free-tier daily build rate-limit** repeatedly blocked live deploys, stalling the live site behind CI-green `main`.
+2. **Consolidation:** DNS, WAF, caching, and analytics already live on Cloudflare — running the app runtime on the same platform removes a hop (CF → Vercel origin) and unifies edge + app.
 
-The owner directed a complete switch to Cloudflare. The app is a good fit for **Cloudflare Workers via
-the OpenNext adapter** (`@opennextjs/cloudflare`): it is SSG + dynamic API routes with **no ISR/revalidate**,
-so no incremental cache (R2/KV) is required — `defineCloudflareConfig()` defaults suffice.
+The decision to migrate to Cloudflare was driven by those two pressures. The app is a good fit for **Cloudflare Workers via the OpenNext adapter** (`@opennextjs/cloudflare`): it is SSG + dynamic API routes with **no ISR / revalidate**, so no incremental cache (R2 / KV) is required — `defineCloudflareConfig()` defaults suffice.
 
 ## Decision
 
@@ -40,12 +36,7 @@ so no incremental cache (R2/KV) is required — `defineCloudflareConfig()` defau
 
 - **Build-time public config** (`NEXT_PUBLIC_*`, inlined) must be set as **GitHub repo Variables** for CI
   builds (today they live in Vercel's env); the full list is in the runbook.
-- **Server secrets** used by API routes (`GITHUB_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`,
-  `FIREBASE_SERVICE_ACCOUNT_JSON`, `PINATA_JWT`, `NEXTAUTH_SECRET`, …) must be set as **Worker secrets**
-  (`wrangler secret put`) — they are NOT inlined and NOT in the workflow.
-- **BLOCKED on creds:** the actual `cf:deploy` needs a **`CLOUDFLARE_API_TOKEN`** with Workers Scripts +
-  Workers Routes permissions for account `CF_ACCOUNT_ID`. The cleaned `.env` has it blank (STATE.md) →
-  the live deploy waits on the owner providing the token (everything else is ready).
-- **Rollback:** disable/remove the Worker route → Cloudflare falls back to the Vercel origin (kept warm).
-- **Docs/process:** project deploy rule updated (CLAUDE.md note + STATE.md); the global CLAUDE.md §G
-  "Vercel for vercel.json" is overridden for this project by this ADR + the runbook.
+- **Server secrets** used by API routes (`GITHUB_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `PINATA_JWT`, `NEXTAUTH_SECRET`, …) must be set as **Worker secrets** (`wrangler secret put`) — they are NOT inlined and NOT in the workflow.
+- **Credential requirement.** The deploy step needs a `CLOUDFLARE_API_TOKEN` with Workers Scripts + Workers Routes permissions for the account; until that token is provided the workflow builds (verifying workerd-buildability) but does not deploy.
+- **Rollback.** Disable / remove the Worker route → Cloudflare falls back to the Vercel origin (kept warm).
+- **Process.** The project's deploy convention is the one in this ADR plus the runbook; it overrides any earlier "Vercel-only" assumption for this repository.

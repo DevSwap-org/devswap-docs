@@ -1,18 +1,10 @@
 # DevSwap Protocol — Decentralization & DAO Governance Roadmap
 
-- **Status:** Design document — maintainer-ratified direction; reserved ADR slots for the technical spec.
-- **Deciders:** DevSwap Protocol Maintainer
-- **Relates to:** the protocol's arbiter-hardening decision record (ADR-0003), the non-custodial
-  positioning decision record (ADR-0006), and the protocol's internal arbitration roadmap, incentive
-  design, and tokenomics planning documents. Public-facing security posture: [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
-- **Reserved ADRs:** the DAO governance architecture (ADR-0019) and Governor-contract parameters
-  (ADR-0020) — drafted on ratification of this roadmap.
+- **Status:** Design document — ratified direction; reserved ADR slots for the technical spec.
+- **Relates to:** the arbiter-hardening decision record ([`ADR-0003`](adr/ADR-0003-arbiter-hardening.md)), the non-custodial positioning decision record ([`ADR-0006`](adr/ADR-0006-non-custodial-positioning.md)), and the project's internal arbitration roadmap, incentive design, and tokenomics planning documents. Public-facing security posture: [`SECURITY-AUDIT.md`](SECURITY-AUDIT.md).
+- **Reserved ADRs:** the DAO governance architecture (ADR-0019) and Governor-contract parameters (ADR-0020) — drafted on ratification of this roadmap.
 
-> **Security Gates context.** Every phase below is conditional on the protocol-level Security Gates
-> documented in [`SECURITY-AUDIT.md`](SECURITY-AUDIT.md) — Mythril CI, Slither, 100% test coverage,
-> the 79+ test suite (automated, all green), independent third-party audit, multisig + timelock, and
-> qualified-counsel review (manual, pending). G1 mainnet launch cannot proceed before gates 5–7
-> close.
+> **Security Gates context.** Every phase below is conditional on the protocol-level Security Gates documented in [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md) — Mythril CI, Slither, ≥ 95 % test coverage, the 400+ test suite (automated, all green), independent third-party audit, multisig + timelock, and qualified-counsel review (manual, pending). G1 mainnet launch cannot proceed before Gates 5 – 7 close.
 
 ---
 
@@ -229,7 +221,7 @@ These are enforced at the Solidity level, not by governance convention. No propo
 | Invariant | Value | Why immutable |
 |---|---|---|
 | Developer minimum share | **≥ 97%** of milestone | Core user promise; reducing it = bait-and-switch |
-| Total fee ceiling | **≤ 3%** of milestone | Competitive moat (MOAT.md §1); raising it breaks positioning |
+| Total fee ceiling | **≤ 3 %** of milestone | Competitive positioning; raising it breaks the headline promise |
 | `burn()` destination | Token contract's own burn function | `address(0)` fails with OZ v5; immutable in contract |
 | CEI pattern + ReentrancyGuard | Always active | Removing it = exploitable in one block |
 | Emergency pause capability | Always available to Guardian | Without it, a bug can drain all funds with no recourse |
@@ -470,7 +462,7 @@ When G4 is reached, the liability posture shifts fundamentally:
 | Arbiter-hardening decision record (ADR-0003) | Arbiter-pool *policy* moves to DAO Tier-2; individual appointments remain admin-executed within policy; snapshot rule is immutable |
 | Non-custodial positioning (ADR-0006) | Governance strengthens this: no governance vote can make the protocol custodial |
 | Hybrid-funding decision record (ADR-0009) | Funding mode defaults and timeout windows = Tier-1 governance |
-| Protocol incentive design (Fork 1–7) | All 7 forks are Tier-1/Tier-2 governance parameters post-G3; the maintainer ratifies them now as bootstrap values |
+| Protocol incentive design (Fork 1 – 7) | All 7 forks are Tier-1 / Tier-2 governance parameters post-G3; bootstrap values are ratified now via ADR |
 | Validate-first tokenomics | The protocol utility token is not launched until GMV is proven; governance activation follows token launch (G2), not before |
 | Security Gates (P5) | G1 is the P5 gate. G1 must pass independent audit + multisig + counsel review before mainnet. |
 
@@ -491,7 +483,5 @@ When G4 is reached, the liability posture shifts fundamentally:
 - **Legal framing:** "Sufficiently decentralized" references the Hinman 2018 framework and common
   Web3 legal practice. This is legal orientation, not legal advice. **Counsel required at G2 and
   G4.**
-- **Competitor references:** Uniswap DAO, Compound Governor, Aave governance — referenced as
-  well-known mechanism categories, not endorsed or cited as binding precedent.
-- **Status:** analysis + design only. **No contract code changed.** All phases are owner-ratified
-  (their ADRs) and where applicable, audit-gated. Mainnet remains behind P5.
+- **Competitor references:** Uniswap DAO, Compound Governor, Aave governance — referenced as well-known mechanism categories, not endorsed or cited as binding precedent.
+- **Status.** Analysis + design only. No contract code changed. All phases are governance-ratified (their ADRs) and, where applicable, audit-gated. Mainnet remains behind the gates in [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md).

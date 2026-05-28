@@ -74,7 +74,7 @@ are deliberately separated: **stability for settlement (USDT)** and
 
 ## 2. Token contract — [`DevSwapToken.sol`](https://github.com/DevSwap-org/devswap-contracts/blob/main/src/DevSwapToken.sol)
 
-Deliberately small (34 lines), Solidity `=0.8.24`, OpenZeppelin v5.1.0 (vendored).
+Deliberately small (34 lines), Solidity `=0.8.34`, OpenZeppelin v5 (vendored).
 
 ```solidity
 contract DevSwapToken is ERC20, ERC20Burnable, ERC20Capped, Ownable2Step
@@ -290,24 +290,32 @@ operator-side seeding first, then introduce the token.
 
 | Contract | Address |
 |---|---|
-| `$DSWP` | `0x2DD2Cd306f32cd6709d4316EF0df125235654734` |
-| Escrow V1 | `0xCEE07220dEC813f8A58b7Da73349dabbc4005840` |
-| Escrow V2.1 | `0x67Eca35d3d23401d53Fba988759F8A649BA67c3e` |
-| Escrow V2.4 (current) | `0xa1aF0da1494Db38924fC2055B9deA79B8b376F47` |
-| Arbiter Pool (V2.4) | `0x747A7a306F12Fce896F08e9A62a7ef83f1d53C95` |
-| USDT (mock for testnet) | `0xE950eb93aCa1f29848f5cBac61d78657e3c97287` |
+| `$DSWP` (testnet) | `0x2DD2Cd306f32cd6709d4316EF0df125235654734` |
+| `DevSwapEscrowV2_6` (current) | `0x22633bd98d6F9AD4dF499b77429459F5574B4dFe` |
+| `DevSwapArbiterPool` | `0x747A7a306F12Fce896F08e9A62a7ef83f1d53C95` |
+| Mock USDT (testnet) | `0xf24e2651A0A63EAf99A3dcE3F3Fb4ff997A8c3F7` |
+| Earlier escrow V1 | `0xCEE07220dEC813f8A58b7Da73349dabbc4005840` (historical) |
+| Earlier escrow V2.1 | `0x67Eca35d3d23401d53Fba988759F8A649BA67c3e` (historical) |
+| Earlier escrow V2.4 | `0xa1aF0da1494Db38924fC2055B9deA79B8b376F47` (historical) |
 
-All source-verified on BscScan testnet.
+### BSC mainnet (chainId 56)
+
+| Contract | Address |
+|---|---|
+| `$DSWP` token contract | `0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9` |
+
+All contracts source-verified on BscScan.
 
 ### Hard facts (BSC)
 
 | Item | Value |
 |---|---|
 | USDT mainnet (BEP-20) | `0x55d398326f99059fF775485246999027B3197955` — **18 decimals** (not 6!) |
-| PancakeSwap V2 router | `0x10ED43C718714eb63d5aA57B78B54704E256024E` |
-| Chain IDs | mainnet=56 · testnet=97 |
-| Solidity / EVM | `=0.8.24` (token + V1/V2) / `=0.8.34` (V2.4) · `shanghai` |
-| OpenZeppelin | v5.1.0 (vendored under `contracts/lib/`) |
+| PancakeSwap V2 router (mainnet) | `0x10ED43C718714eb63d5aA57B78B54704E256024E` |
+| PancakeSwap V2 router (testnet) | `0xD99D1c33F9fC3444f8101754aBC46c52416550D1` |
+| Chain IDs | mainnet = 56 · testnet = 97 |
+| Solidity / EVM | `=0.8.34` · `shanghai` |
+| OpenZeppelin | v5 (vendored under `contracts/lib/`) |
 
 ---
 

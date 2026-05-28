@@ -12,7 +12,7 @@
 
 ## Disputes & arbitration
 
-* [Dispute resolution (V2.4)](DISPUTE-RESOLUTION.md)
+* [Dispute resolution](DISPUTE-RESOLUTION.md)
 * [Arbiter staking — ADR-0013](adr/ADR-0013-arbiter-staking.md)
 * [Arbiter hardening — ADR-0003](adr/ADR-0003-arbiter-hardening.md)
 
@@ -45,7 +45,7 @@
 * [ADR-0007: Converge on V2.1](adr/ADR-0007-converge-on-v2_1.md)
 * [ADR-0008: Cloudflare Workers deploy](adr/ADR-0008-cloudflare-deploy.md)
 * [ADR-0009: Hybrid funding trigger](adr/ADR-0009-funding-trigger.md)
-* [ADR-0013: Staked arbiter pool (V2.4)](adr/ADR-0013-arbiter-staking.md)
+* [ADR-0013: Staked arbiter pool](adr/ADR-0013-arbiter-staking.md)
 
 ## Resources
 

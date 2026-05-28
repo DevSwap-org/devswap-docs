@@ -1,26 +1,15 @@
-# DevSwap — Dispute Resolution & Arbitration: broad analysis + best-practice roadmap
+# DevSwap — Dispute Resolution & Arbitration
 
-> **What this is.** A *strategy/design* doc (peer to `SECURITY.md`, `ARCHITECTURE.md`, `RUNBOOK.md`) that
-> (1) analyzes the **dispute-resolution design space** broadly, (2) chooses **best practices** for DevSwap's
-> non-custodial milestone-escrow context, and (3) lays out a **phased roadmap (A0→A6)** to evolve arbitration
-> from today's hardened-but-centralized tier-2 toward a fair, proportionate, decentralizing system.
-> **`ADR-0003` is the *current implementation*; this doc is the *forward plan above it*.** It is
-> **analysis + plan, not executed code** — every contract change here is future work, **TDD + audit + owner
-> ratified** (mainnet stays behind the P5 gate). Specific decisions become their own ADRs when ratified.
-> **Companion:** [`TRUST-AND-INCENTIVES.md`](TRUST-AND-INCENTIVES.md) answers the *economic* dispute
-> sub-questions this doc defers to A3–A6 — how the arbiter is paid (**loser-funded deposit, NOT the dev's
-> 97%**), penalties for a wrong dev/client, the never-frozen fallback, devs-as-jurors — plus
-> communication/anti-disintermediation, token demand utility, and decentralized verification.
-> **Governance layer:** At G3+, the DAO governs arbiter-pool *policy* (qualification standards, panel size,
-> random-draw algorithm) via Tier-2 votes. See [`GOVERNANCE.md`](GOVERNANCE.md) §7 for the full arbitration
-> governance design. The A5/A6 staked-random-pool is the governance end-state for arbiter selection.
+> **What this is.** A strategy / design document (peer to [`SECURITY.md`](SECURITY.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`RUNBOOK.md`](RUNBOOK.md)) that
+> (1) analyses the **dispute-resolution design space** broadly,
+> (2) chooses **best practices** for DevSwap's non-custodial milestone-escrow context, and
+> (3) lays out a **phased roadmap (A0 → A6)** to evolve arbitration from today's hardened tier-2 toward a fair, proportionate, decentralising system.
 >
-> **Constraints (do not drift):** non-custodial (the smart contract + the parties bear risk, not "we"); fee
-> **3% (1.5% platform + 1.5% buyback), dev 97%** (§17); **milestone-only** (ADR-0002); reputation = **public
-> itemized counters**; UI copy **§18-safe**; en/ar parity. **Citation:** current state cited by
-> `contracts/src/DevSwapEscrowV2_1.sol:NNN` + ADR-0003; competitor facts `[F-N]`/`[U-N]`/source-line; external
-> protocols referenced as **well-known mechanism categories** (design reference, not cited specifics — see the
-> Evidence basis note); recommendations tagged **design inference / engineering judgment**.
+> [`ADR-0003`](adr/ADR-0003-arbiter-hardening.md) is the *current implementation*; this document is the *forward plan above it*. It is analysis + plan, not executed code — every contract change here is future work, TDD + audit + governance ratified (mainnet stays behind the gates in [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md)). Specific decisions become their own ADRs when ratified.
+> **Companion:** [`TRUST-AND-INCENTIVES.md`](TRUST-AND-INCENTIVES.md) answers the *economic* dispute sub-questions this doc defers to A3 – A6 — how the arbiter is paid (loser-funded deposit, **not** the dev's 97 %), penalties for a wrong dev / client, the never-frozen fallback, devs-as-jurors — plus communication / anti-disintermediation, token-demand utility, and decentralised verification.
+> **Governance layer:** at G3+, the DAO governs arbiter-pool *policy* (qualification standards, panel size, random-draw algorithm) via Tier-2 votes. See [`GOVERNANCE.md §7`](GOVERNANCE.md) for the full arbitration governance design. The A5 / A6 staked-random-pool is the end-state for arbiter selection.
+>
+> **Constraints (do not drift):** non-custodial (the smart contract + the parties bear risk, not "we"); fee **3 % (1.5 % platform + 1.5 % buyback), dev 97 %**; milestone-only ([`ADR-0002`](adr/)); reputation = public itemized counters; UI copy avoids custody / guarantee / refund language; en / ar parity. **Citation:** current state cited from the verified `DevSwapEscrowV2_6` source + ADR-0003; competitor practices referenced as category exemplars; external protocols referenced as **well-known mechanism categories** (design reference, not cited specifics — see the Evidence-basis note); recommendations tagged **design inference / engineering judgment**.
 
 ---
 
@@ -68,8 +57,7 @@ pie title Dispute loser-bond distribution
    a "frozen-forever" edge, no on-chain revision loop.
 3. **Best practice = prevention-first + proportionate escalating tiers** (Tier 0 automated → 1 mutual
    settlement → 2 appointed panel → 3 decentralized/optimistic), scaled to the amount at stake.
-4. **Roadmap A0→A6** turns each gap into a TDD-built, audit-gated, owner-ratified phase, decentralizing the
-   appointment power last (owner→multisig→governance).
+4. **Roadmap A0 → A6** turns each gap into a TDD-built, audit-gated, governance-ratified phase, decentralising the appointment power last (single key → multisig → DAO).
 
 ---
 
@@ -156,7 +144,7 @@ Ordered; each tagged with the gap it closes. *(design inference / engineering ju
 1. **Prevention before resolution** — most disputes should never reach a human:
    - structured brief on IPFS = the scope-of-truth; **milestone granularity** limits blast radius;
    - a **first-class revision request** (re-open a submission for a bounded re-submit count) so dispute is the
-     *last* resort, mirroring Fiverr/Upwork revision-first (`fiverr.md:3443`, `upwork.md:2179`) — **closes G8**;
+     *last* resort, mirroring the revision-first pattern in mainstream freelance platforms — **closes G8**;
    - **review-window auto-release** (shipped) handles client-ghosting without an arbiter;
    - **dispute cooling-off** (UX-9) to stop rage-disputes.
 2. **A cost to dispute (anti-griefing, G2):** raising a dispute posts a **small refundable deposit**, returned
@@ -205,10 +193,7 @@ contracts reach Tier 2/3, where the higher cost is justified by the stakes.
 
 ## 6. Phased roadmap (A0 → A6)
 
-> Each phase: **goal · contract/UX/governance delta · gates · ADR?**. All contract work = TDD (unit/fuzz/
-> invariant + attack scenarios) + slither + en/ar + §17/§18; **independent audit + owner→multisig before
-> mainnet** (P5). Order is by impact-per-risk; A1–A2 are cheap + high-impact, A4/A6 are the heavy economic/
-> decentralization lifts.
+> Each phase: **goal · contract / UX / governance delta · gates · ADR?**. All contract work = TDD (unit / fuzz / invariant + attack scenarios) + slither + en / ar + fee-consistency + legal-language guards; **independent audit + owner → multisig before mainnet** (see [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md)). Order is by impact-per-risk; A1 – A2 are cheap + high-impact, A4 / A6 are the heavy economic / decentralisation lifts.
 
 | Phase | Goal | Delta | Gate / ADR |
 |-------|------|-------|-----------|
@@ -218,11 +203,9 @@ contracts reach Tier 2/3, where the higher cost is justified by the stakes.
 | **A3 — Fair + anti-griefing Tier 2** | fairer, harder to game (G2,G3,G9) | **dispute deposit** (refund winner); **partial/split ruling**; evidence window; random assignment + conflict rules | contract; audit; **ADR-0012** |
 | **A4 — Arbiter incentives** | align honesty (G5) | arbitration **fee** and/or **stake+slashing**; public arbiter track-record | economic design; careful audit; **ADR-0013** |
 | **A5 — No-permanent-freeze** | remove the stuck-forever edge (G7) | governed emergency-resolution path past a long timeout (multisig path, snapshot-safe) | contract; audit; **ADR-0014** |
-| **A6 — Decentralized escalation + governance** | trust-minimize (G1,G6) | **bounded appeal** → **Tier-3** (Kleros-style jury or UMA-style optimistic oracle, value-gated); registry governance owner→multisig→DAO | research + integration; audit; **ADR-0015** |
+| **A6 — Decentralised escalation + governance** | trust-minimise (G1, G6) | **bounded appeal** → **Tier-3** (Kleros-style jury or UMA-style optimistic oracle, value-gated); registry governance owner → multisig → DAO | research + integration; audit; **ADR-0015** |
 
-**Dependency notes:** A1/A2 are independent + safe → do first. A3 builds the fair tier-2 most cases will use.
-A4 (economics) and A6 (decentralization) are the largest; sequence after the cheaper wins prove the funnel.
-A5 can land any time after A3. **None ships to mainnet without the P5 audit + multisig gate.**
+**Dependency notes.** A1 / A2 are independent + safe → do first. A3 builds the fair tier-2 most cases will use. A4 (economics) and A6 (decentralisation) are the largest; sequence after the cheaper wins prove the funnel. A5 can land any time after A3. **None ships to mainnet without the audit + multisig gates.**
 
 ## 7. Gaps → fix traceability
 
@@ -237,12 +220,9 @@ A5 can land any time after A3. **None ships to mainnet without the P5 audit + mu
   this roadmap is honest about that.
 - **Non-custodial / §18:** all rulings move funds via the **contract**, not "us"; no custody/guarantee/refund
   wording in any user-facing copy this work would add; "escrow" stays in technical prose only.
-- **Restates shipped (not inference):** the A0 baseline (§2) is read from `DevSwapEscrowV2_1` + ADR-0003.
+- **Restates shipped (not inference):** the A0 baseline (§2) is read from the verified `DevSwapEscrowV2_6` source + [`ADR-0003`](adr/ADR-0003-arbiter-hardening.md).
 - **Design inference / engineering judgment (labeled):** §3 archetype fit, §4 best practices, §5 target tiers,
   §6 roadmap + the ADR-0010..0015 numbering (reserved, not yet written), all timeout/deposit/% values
   (illustrative, to be set per-ADR with tests).
-- **External protocols** (Kleros, UMA optimistic oracle, Aragon Court) are referenced as **well-known
-  mechanism *categories*** for design orientation — **not** cited specifics; any integration (A6) requires its
-  own up-to-date due-diligence + audit before adoption. Competitor facts carry `[F-N]`/`[U-N]`/source-line.
-- **Status:** analysis + plan only. **No contract code changed.** Each phase is owner-ratified (its ADR) and
-  audit-gated; mainnet remains behind P5 (audit + owner→multisig + timelock).
+- **External protocols** (Kleros, UMA optimistic oracle, Aragon Court) are referenced as **well-known mechanism *categories*** for design orientation — **not** cited specifics; any integration (A6) requires its own up-to-date due-diligence + audit before adoption.
+- **Status.** Analysis + plan only. No contract code changed. Each phase is governance-ratified (its ADR) and audit-gated; mainnet remains behind the audit + multisig + timelock gates.

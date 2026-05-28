@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-05-23
-- **Supersedes/relates:** complements CLAUDE.md §18 (Legal-Safe Language) and PR L-1 (`fix/legal-safe-language`).
+- **Supersedes / relates:** complements the project's legal-safe-language policy and the L-1 enforcement work.
 
 ## Context
 
@@ -42,7 +42,7 @@ post-L-1):
 - **Legal:** reduced regulatory exposure (not eliminated — independent counsel still required before
   mainnet / public launch; this is positioning, not legal advice).
 - **UX:** slightly more technical language, offset by clear first-encounter explainer copy (UX-5).
-- **Marketing:** strengthens the decentralization moat (DOC-3 / MOAT).
+- **Marketing:** strengthens the decentralisation positioning.
 - **Engineering:** code variable names unaffected; only user-facing copy is regulated.
 - **Note:** the positioning statement deliberately uses negated forms ("we don't hold"); the
   legal-language CI guard allows negated usage in the positioning key and only flags affirmative

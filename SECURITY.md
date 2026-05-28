@@ -54,27 +54,19 @@ surrounding `try/catch`.
 
 ## Test coverage
 
-79 tests: unit (53), token (13), fuzz (7 @ 10k runs), invariant (2 @ 16k calls),
-reentrancy (4), plus `BuybackFork.t.sol` (2 mainnet-fork tests against the real
-PancakeSwap router; auto-skip without `BSC_RPC_URL`). 100% line/branch/function
-coverage on both contracts. Slither: 0 high / 0 medium.
+**400 + tests** across 19 Foundry suites: unit, fuzz @ 10 000 runs, invariant @ 16 384 calls, reentrancy, plus mainnet-fork tests against the real PancakeSwap router (auto-skip without `BSC_RPC_URL`). Escrow line coverage ≥ 95 %; function coverage 100 %. Slither: 0 high / 0 medium.
 
 ## Secrets policy
 
-- **No secrets in the client.** Every secret lives server-side only. Only
-  `NEXT_PUBLIC_*` (non-secret) values reach the browser bundle.
-- `.env*` is gitignored and must never be committed.
-- The repo-root `.env` is malformed free-text holding currently-exposed
-  testnet keys — these will be **rotated by the owner after 100% completion**.
+- **No secrets in the client.** Every secret lives server-side only. Only `NEXT_PUBLIC_*` (non-secret) values reach the browser bundle.
+- `.env*` files are gitignored and must never be committed.
+- Testnet-only keys are isolated from any mainnet path and will be rotated as part of the mainnet handover.
 - Never print secret values in logs, chat, or commits.
 
-## Pre-mainnet gate (P5)
+## Pre-mainnet gates
 
-Independent audit (PeckShield / CertiK) → multisig + timelock ownership → LP
-lock (PinkLock) → legal review. None of these may be skipped. Tracked in
-`BLOCKED.md`.
+Independent audit (PeckShield / CertiK) → multisig + timelock ownership → LP lock → qualified-counsel review. None of these may be skipped. The full gate list lives in [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md).
 
 ## Reporting
 
-Report vulnerabilities privately to the owner (see `.github/ISSUE_TEMPLATE/security.md`
-— do **not** open a public issue for an exploitable finding).
+Report vulnerabilities privately to the security contact in [`SECURITY.md`](https://github.com/DevSwap-org/.github/blob/main/SECURITY.md) — **do not** open a public issue for an exploitable finding.

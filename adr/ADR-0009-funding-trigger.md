@@ -1,26 +1,18 @@
-# ADR-0009 — Funding model: client-selected commitment mode (hybrid: Full / 10% deposit / On-accept)
+# ADR-0009 — Funding model: client-selected commitment mode (hybrid: Full / 10 % deposit / On-accept)
 
-- **Status:** **Accepted** — the hybrid 3-mode model was selected. Two operational sub-decisions
-  are flagged **tunable** below (recommended defaults given).
-- **Date:** 2026-05-24 (supersedes the Proposed A/B/C draft of this ADR)
-- **Relates:** ADR-0007 (converge on V2.1 — refines its *funding trigger*), ADR-0002 (milestone-only —
-  carried forward, no hourly), ADR-0003 (arbiter).
-- **Trigger:** clients should not have to lock capital before a developer commits — let the client
-  choose how much to lock at post time.
+- **Status:** **Accepted** — the hybrid 3-mode model was selected. Two operational sub-decisions are flagged **tunable** below (recommended defaults given).
+- **Date:** 2026-05-24 (supersedes the earlier Proposed A / B / C draft of this ADR)
+- **Relates:** ADR-0007 (converge on V2.1 — refines its *funding trigger*), ADR-0002 (milestone-only — carried forward, no hourly), ADR-0003 (arbiter).
+- **Motivation:** clients should not have to lock capital before a developer commits — let the client choose how much to lock at post time.
 
 ## Context (grounded in the live contract)
 
-Verified in [`DevSwapEscrowV2_1.sol`](../../contracts/src/DevSwapEscrowV2_1.sol): `createJob`
-([:237](../../contracts/src/DevSwapEscrowV2_1.sol:237)) pulls the **full total** at creation into status
-`Open` with **no developer**; `acceptJob` ([:240–249](../../contracts/src/DevSwapEscrowV2_1.sol:240)) lets
-**any non-client** self-assign (moves no funds). This produced **three defects** (the A/B/C analysis that
-preceded this decision): (1) **capital dead-lock** — funds frozen before any counterparty commits; (2)
-**Gig sniping** — any developer can capture a funded job (no `targetDeveloper` bind); (3) matches **neither**
-incumbent — Fiverr = pre-committed Gig (`fiverr.md:2352`, `fiverr.md:2325`), Upwork = fund-**after**-accept
-(`upwork.md:476`, `upwork.md:488-500`).
+The first iteration of `createJob` pulled the **full total** at creation into status `Open` with **no developer**; `acceptJob` let **any non-client** self-assign (moves no funds). This produced **three defects**:
+(1) **capital dead-lock** — funds frozen before any counterparty commits;
+(2) **Gig sniping** — any developer can capture a funded job (no `targetDeveloper` bind);
+(3) it matched **neither incumbent pattern** — the fixed-scope marketplace pattern pre-commits the Gig, while the open-bid marketplace pattern funds **after** acceptance.
 
-**Owner's resolution (chosen):** don't pick one funding trigger — make it **hybrid**: the client who posts
-chooses one of **three funding modes**, each cancelable in full **before the developer approves**:
+**Resolution (chosen):** don't pick one funding trigger — make it **hybrid**: the client who posts chooses one of **three funding modes**, each cancellable in full **before the developer approves**:
 
 1. **Full lock now** — locks 100% at post. Strongest trust signal → fastest developer acceptance.
 2. **10% good-faith deposit** — locks 10% at post. A seriousness signal without tying up full capital.
@@ -31,14 +23,13 @@ All three: **the client can cancel and recover the locked amount at any time bef
 
 ## Design (the chosen model)
 
-Two **orthogonal axes**. The owner's three options are Axis B; they apply to **both** doors of Axis A.
+Two **orthogonal axes**. The three funding-mode options are Axis B; they apply to **both** doors of Axis A.
 
 - **Axis A — the door (who the developer is):**
   - **Gig door** — developer = the Gig's owner (terms pre-committed by listing the Gig).
   - **Open-Job door** — client posts free, developers propose free, **client selects** one proposal.
-  - In **neither** door does a developer self-assign by racing — acceptance is always the **intended**
-    developer. *(This kills defect #2 — sniping — for every mode.)*
-- **Axis B — the funding mode (the owner's 3-way choice):** Full / Deposit-10% / On-accept.
+  - In **neither** door does a developer self-assign by racing — acceptance is always the **intended** developer. *(This kills defect #2 — sniping — for every mode.)*
+- **Axis B — the funding mode:** Full / Deposit-10 % / On-accept.
 
 ### Unified lifecycle (door sets the developer; mode sets the funding)
 
@@ -71,17 +62,9 @@ always cancel before a developer commits.)*
 
 ## Best practices chosen
 
-1. **Smart default per door.** Gig door defaults to **Full** (it's an instant purchase, Fiverr-style);
-   Open-Job door defaults to **Deposit-10%** (serious signal without full lock). Client can override.
-   *(tunable — see below.)*
-2. **Make the trust signal legible to developers.** Every listing/offer shows a badge — **"Fully funded" /
-   "10% deposit locked" / "Funds on accept"** — so developers self-select. This *is* the market mechanism the
-   owner is creating, and it leans on the transparency MOAT (DOC-3 W5).
-3. **Reputation, not forfeiture, enforces seriousness.** A client who locks then flakes **after** a developer
-   commits loses no money (the deposit returns) but gains a **public `commitmentsAbandoned` counter**.
-   Rationale: keeps §18 clean (no money moves without delivered work / no penalty-custody semantics) and
-   turns DevSwap's on-chain reputation into the enforcement layer (DOC-3 W3). *(forfeiture is the flagged
-   alternative below.)*
+1. **Smart default per door.** Gig door defaults to **Full** (it's an instant purchase); Open-Job door defaults to **Deposit-10 %** (serious signal without full lock). Client can override. *(tunable — see below.)*
+2. **Make the trust signal legible to developers.** Every listing / offer shows a badge — **"Fully funded" / "10 % deposit locked" / "Funds on accept"** — so developers self-select. This *is* the market mechanism the protocol is creating, and it leans on the transparency wedge of the on-chain reputation system.
+3. **Reputation, not forfeiture, enforces seriousness.** A client who locks then flakes **after** a developer commits loses no money (the deposit returns) but gains a **public `commitmentsAbandoned` counter**. Rationale: keeps the legal-safe-language constraints clean (no money moves without delivered work / no penalty-custody semantics) and turns the on-chain reputation system into the enforcement layer. *(Forfeiture is the flagged alternative below.)*
 4. **Cancel-before-approval always returns 100% of the locked amount** — the escape valve that dissolves the
    dead-lock objection. No penalty at this stage (no developer has committed yet).
 5. **Bind the developer — no sniping, ever.** Acceptance is by the Gig owner (Gig door) or the
@@ -106,13 +89,11 @@ always cancel before a developer commits.)*
   **18-decimal** USDT. Client-initiated funding avoids the developer-triggered-drain risk entirely.
 - **Audit surface ↑** (a small state machine: `AwaitingDevApproval`, `AwaitingFunding`) — justified by
   removing real friction + a sniping vector, and **cheap now** (pre-mainnet, testnet-only, no fund migration).
-- **Docs to update on implementation:** DOC-4 Stage 4, DOC-5 §3/§5, DOC-6 §C.1/§C.2/§D.3.2 (Fund sheet),
-  CONTRACTS.md, ARCHITECTURE.md, SECURITY-AUDIT.md, TASKS.md.
+- **Docs to update on implementation:** [`CONTRACTS.md`](../CONTRACTS.md), [`ARCHITECTURE.md`](../ARCHITECTURE.md), [`SECURITY-AUDIT.md`](../SECURITY-AUDIT.md), and the internal change log.
 
 ## Implementation plan (next stream — TDD, security-first)
 
-> Pre-mainnet + testnet-only ⇒ **amend `DevSwapEscrowV2_1` and redeploy** (legacy deploy → read-only, no
-> fund migration). Mainnet stays gated behind the P5 audit/multisig gate (ADR-0007).
+> Pre-mainnet + testnet-only ⇒ **amend `DevSwapEscrowV2_1` and redeploy** (legacy deploy → read-only, no fund migration). Mainnet stays gated behind the audit / multisig gates (see ADR-0007 + [`SECURITY-AUDIT.md §1`](../SECURITY-AUDIT.md)).
 
 1. **Contract.**
    - `enum FundingMode { Full, Deposit, OnAccept }`; add to the job; `enum` extends `JobStatus` with
@@ -138,17 +119,12 @@ always cancel before a developer commits.)*
    - mode 3 — "Lock nothing until your developer accepts."
    - cancel — "Cancel anytime before your developer accepts — your USDT returns in full."
    (No custody/guarantee/refund verbs in user-facing copy — the smart contract is the actor.)
-4. **Docs + gates:** update the docs listed above; `forge build/test/coverage`, slither clean, en+ar
-   screenshots (§16), §17 fee + §18 legal CI green; independent audit before any mainnet (P5).
+4. **Docs + gates.** Update the docs listed above; `forge build / test / coverage`, slither clean, en + ar screenshots, fee-consistency + legal-language CI green; independent audit before any mainnet deployment.
 
-## Tunable sub-decisions (recommended defaults; owner may adjust in one line)
+## Tunable sub-decisions (recommended defaults; governance may adjust in one line)
 
-- **T1 — seriousness enforcement for mode 2 flake:** **reputation counter (recommended)** vs **forfeit the
-  10% to the developer** (stronger "teeth", but introduces penalty/custody semantics + legal surface, and
-  conflicts with §18 "no money without delivered work"). *Default: reputation counter.*
-- **T2 — funding window length (modes 2/3 post-approval):** *Default: 48h.*
-- **T3 — defaults & instant-order:** Gig→Full, Open-Job→Deposit-10%; Gig instant-order (skip dev-confirm) =
-  *off by default* (keeps a cancel-before-approval window even on Gigs).
+- **T1 — seriousness enforcement for mode 2 flake:** **reputation counter (recommended)** vs **forfeit the 10 % to the developer** (stronger "teeth", but introduces penalty / custody semantics + legal surface, and conflicts with the "no money without delivered work" policy). *Default: reputation counter.*
+- **T2 — funding window length (modes 2 / 3 post-approval):** *Default: 48 h.*
+- **T3 — defaults & instant-order:** Gig → Full, Open-Job → Deposit-10 %; Gig instant-order (skip dev-confirm) = *off by default* (keeps a cancel-before-approval window even on Gigs).
 
-On confirmation of T1–T3 (or acceptance of the defaults), implementation proceeds under TDD with the attack
-scenarios in §Implementation/2.
+On confirmation of T1 – T3 (or acceptance of the defaults), implementation proceeds under TDD with the attack scenarios in §Implementation / 2.

@@ -19,7 +19,7 @@
 | **[Architecture overview](ARCHITECTURE.md)** | High-level system map: web → contracts → subgraph → keeper |
 | **[Smart contracts](CONTRACTS.md)** | Contract list, function surface, state model, event signatures |
 | **[Tokenomics](TOKENOMICS.md)** | $DSWP supply, vesting, buyback-and-burn flow, treasury accounting |
-| **[Dispute resolution (V2.4)](DISPUTE-RESOLUTION.md)** | 3-arbiter panel voting, dynamic deposits, pull-payment claims |
+| **[Dispute resolution](DISPUTE-RESOLUTION.md)** | 3-arbiter panel voting, symmetric 3% bond, pull-payment claims |
 | **[Trust & incentives](TRUST-AND-INCENTIVES.md)** | Reputation, Sybil resistance, why the system stays honest |
 | **[Security policy](SECURITY.md)** + **[Security audit](SECURITY-AUDIT.md)** | Threat model, SWC posture, automated-gate evidence |
 | **[Governance roadmap](GOVERNANCE.md)** | G0 → G4 decentralization path (immutable floors documented) |
@@ -59,13 +59,13 @@ gated by the **seven Security Gates** documented below.
 | 1 | Symbolic execution (Mythril) — CI hard gate | Automated | ✅ wired |
 | 2 | Pattern analysis (Slither) — 0 high · 0 medium findings | Automated | ✅ green |
 | 3 | Test coverage — Escrow + Token 100% lines / statements / branches / functions | Automated | ✅ green |
-| 4 | Test suite — unit · fuzz @ 10,000 runs · invariant · mainnet-fork (79+ tests) | Automated | ✅ green |
+| 4 | Test suite — unit · fuzz @ 10,000 runs · invariant · mainnet-fork (400+ tests) | Automated | ✅ green |
 | 5 | Independent third-party audit (e.g., PeckShield / CertiK) | Manual | ⏳ pending |
 | 6 | Multisig 3-of-5 (hardware wallets) + Zodiac timelock (48–72h) | Manual | ⏳ pending |
 | 7 | Qualified-counsel review of disclosure copy + jurisdiction posture | Manual | ⏳ pending |
 
 The four automated gates are enforced on every commit to `main` in the public contracts repository.
-The three manual gates are protocol-maintainer actions required before any mainnet launch.
+The three manual gates are governance actions required before any mainnet launch.
 
 ---
 
@@ -84,25 +84,24 @@ surface — these are documented in detail in [SECURITY-AUDIT §9](SECURITY-AUDI
 
 ---
 
-## 3. What's new — V2.4 dispute panel
+## 3. What's new — V2.6 dispute panel
 
-V2.4 replaces the single-arbiter dispute path with a **3-arbiter consensus panel**:
+V2.6 replaces the legacy single-arbiter path with a **3-arbiter consensus panel** governed by a symmetric bond and a 4-way split.
 
-| Property | V2.2 (prior) | V2.4 (current) |
+| Property | Earlier version | V2.6 (current) |
 |---|---|---|
-| Arbiter selection | Owner-curated allowlist | Stake-weighted random draw from `DevSwapArbiterPool` |
-| Dispute deposit | Flat 5 USDT | Dynamic — `clamp(amount × 3%, [15, 150] USDT)` |
-| Resolution | One arbiter's call | 2/3 majority (auto-finalize) or post-window settle |
-| Payouts | Direct push to winner | Pull-payment (`claimArbiterReward` / `claimWinnerDeposit`) |
-| Arbiter accountability | None on missed votes | 5% stake slash on missed vote within the 7-day window |
+| Arbiter selection | Single-arbiter allowlist | Stake-weighted random draw from `DevSwapArbiterPool` |
+| Dispute deposit | Asymmetric / loser-funded | **Symmetric 3 % bond** posted by both parties; loser forfeits |
+| Resolution split | Direct push to winner | **50 / 35 / 5 / 10** — winner / panel / platform / buyback-burn |
+| Payouts | Direct push | Pull-payment (`claimWinnerDeposit` / `claimArbiterReward`) |
+| Arbiter accountability | None on missed votes | 5 % stake slash on missed vote within the 7-day window |
 
 **Verified on BSC testnet (chainId 97):**
-- `DevSwapEscrowV2_4`: [`0xa1aF0da1494Db38924fC2055B9deA79B8b376F47`](https://testnet.bscscan.com/address/0xa1af0da1494db38924fc2055b9dea79b8b376f47)
+- `DevSwapEscrowV2_6`: [`0x22633bd98d6F9AD4dF499b77429459F5574B4dFe`](https://testnet.bscscan.com/address/0x22633bd98d6F9AD4dF499b77429459F5574B4dFe)
 - `DevSwapArbiterPool`: [`0x747A7a306F12Fce896F08e9A62a7ef83f1d53C95`](https://testnet.bscscan.com/address/0x747a7a306f12fce896f08e9a62a7ef83f1d53c95)
 
-Full design in [DISPUTE-RESOLUTION.md](DISPUTE-RESOLUTION.md) and
-[ADR-0013](adr/ADR-0013-arbiter-staking.md). Audit details in
-[SECURITY-AUDIT §11](SECURITY-AUDIT.md).
+Full design in [DISPUTE-RESOLUTION.md](DISPUTE-RESOLUTION.md) and the
+[ADR series](adr/). Audit details in [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
 
 ---
 
@@ -156,7 +155,7 @@ original contributors. The transition follows four phases (G0 → G4), documente
 
 | Phase | What | Status |
 |-------|------|--------|
-| G0 | Owner-controlled testnet — current state | Today |
+| G0 | Single-key parameter management on testnet — current state | Today |
 | G1 | Mainnet launch behind 3-of-5 multisig + 48h timelock | Pending Security Gates 5 + 6 |
 | G2 | Protocol utility token gains `ERC20Votes` (snapshot-based voting power) | Future |
 | G3 | DAO Governor + three-tier timelock (48h / 7d / 14d) controls parameter changes | Future |
@@ -171,7 +170,7 @@ closes the puppet-arbiter attack class. Full list in [GOVERNANCE.md §5.4](GOVER
 
 ## 7. Technical Stack — public references
 
-- **Smart contracts:** Solidity 0.8.24 (Foundry), OpenZeppelin v5 (vendored — reproducible builds).
+- **Smart contracts:** Solidity 0.8.34 (Foundry), OpenZeppelin v5 (vendored — reproducible builds).
 - **Settlement asset:** USDT on BNB Smart Chain (BEP-20, 18 decimals — distinct from Ethereum's 6).
 - **DEX integration:** PancakeSwap V2 router (for the buyback-and-burn mechanism).
 - **Network identifiers:** BNB Smart Chain mainnet `chainId 56` · testnet `chainId 97`.
@@ -201,8 +200,8 @@ builds: the OpenZeppelin v5 dependency is vendored at a pinned commit hash.
 when you want to fund or accept work (these routes are subject to the §2 geo-restrictions).
 
 **Who holds my funds?** The smart contract, until your explicit approval or until a dispute /
-timeout rule fires. The protocol operators have no key that can move client funds outside the
-documented contract paths.
+timeout rule fires. No party — including the protocol team — has a key that can move client
+funds outside the documented contract paths.
 
 **What are the fees?** 3% total, split 1.5% protocol operations + 1.5% buyback-and-burn; the
 developer receives 97%. These shares are immutable in contract bytecode (see §3.1).
