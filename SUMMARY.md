@@ -1,6 +1,7 @@
 # Table of contents
 
 * [DevSwap Protocol](README.md)
+* [Roadmap](ROADMAP.md)
 
 ## Protocol
 
