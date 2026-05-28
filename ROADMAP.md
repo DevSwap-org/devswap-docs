@@ -216,9 +216,9 @@ flowchart LR
 Every loop produces an Architecture Decision Record. The ADRs are public
 in [`adr/`](adr/) — you can read the trade-off we considered, the
 alternative we rejected, and the reasoning that picked the option we
-shipped. This is the contract we hold ourselves to: **decisions are
-written down before they are executed, and the writing stays public after
-the code goes live**.
+shipped. This is the discipline we follow: **decisions are written down
+before they are executed, and the writing stays public after the code
+goes live**.
 
 ---
 
