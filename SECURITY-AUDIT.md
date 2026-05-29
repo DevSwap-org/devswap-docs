@@ -96,7 +96,7 @@ SWC finding on these contracts will block merge per the hard-gate ruleset.
 ## 6. DevSwapEscrowV2_1 (Phase 2.1) — milestones + reputation + hardened tier-2 disputes
 
 Date: 2026-05-22 · Scope: `contracts/src/DevSwapEscrowV2_1.sol` (new) · Solc `=0.8.24` · OZ v5.1.0 ·
-See [ADR-0003](docs/decisions/ADR-0003-arbiter-hardening.md). Supersedes the original V2 (deprecated).
+See [ADR-0003](adr/ADR-0003-arbiter-hardening.md). Supersedes the original V2 (deprecated).
 
 > Status: internal review for testnet. Independent audit + mythril remain a hard P5 gate before mainnet.
 
@@ -149,7 +149,7 @@ Identical to §5; V2.1 is deployed + audited independently (`script/DeployV2_1.s
 ## 7. DevSwapEscrowV2_2 (Phase V2.2) — hybrid funding + dispute deposit + timeout fallback
 
 Date: 2026-05-24 · Scope: `contracts/src/DevSwapEscrowV2_2.sol` (new) · Solc `=0.8.24` · OZ v5.1.0 ·
-See [ADR-0009](docs/decisions/ADR-0009-hybrid-funding.md), ADR-0012, ADR-0014.
+See [ADR-0009](adr/ADR-0009-funding-trigger.md), ADR-0012, ADR-0014.
 
 > Status: internal review for testnet. Independent audit + mythril remain a hard P5 gate before mainnet.
 

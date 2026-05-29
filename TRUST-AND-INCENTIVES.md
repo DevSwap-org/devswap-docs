@@ -31,7 +31,7 @@ peer attestation); **reject** "subject pays verifier + platform takes a cut."
 # Area A — Arbitration economics (Q1, Q3 specifics)
 
 > Builds on [`DISPUTE-RESOLUTION.md`](DISPUTE-RESOLUTION.md) (the A0→A6 roadmap) and
-> [ADR-0003](decisions/ADR-0003-arbiter-hardening.md) (the shipped A0 baseline). This section answers the
+> [ADR-0003](adr/ADR-0003-arbiter-hardening.md) (the shipped A0 baseline). This section answers the
 > *economic* sub-questions that roadmap defers to phases A3–A6.
 
 ## A.1 Guaranteeing arbiter availability — three layers, decentralizing over time
@@ -97,7 +97,7 @@ Protecting the dev from **extortion-by-dispute** is symmetric and is the main re
 1. **Release the disputed milestone to the developer** (the ruling pays the honest dev).
 2. **Client forfeits their dispute deposit** (A.3 / G2) — raising a frivolous dispute has a real cost.
 3. **Client-side public counter** — e.g. `disputesLostAsClient` / the existing `commitmentsAbandoned`
-   ([ADR-0009](decisions/ADR-0009-funding-trigger.md)) — clients build a reputation too; serial bad-faith
+   ([ADR-0009](adr/ADR-0009-funding-trigger.md)) — clients build a reputation too; serial bad-faith
    clients become visible to devs deciding whether to take their jobs.
 4. **Pre-dispute friction** that prevents the situation: **dispute cooling-off** (UX-9) + a **first-class
    revision request** (closes **G8**, A1) + **Tier-1 mutual settlement** (closes **G4**, A2) — so an
