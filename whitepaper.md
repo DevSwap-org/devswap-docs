@@ -65,7 +65,7 @@ Client funds USDT  →  Smart contract holds  →  Developer delivers
 
 ### Supply
 - **Max supply** — 100,000,000 DSWP (`ERC20Capped` — immutable hard ceiling)
-- **Mainnet contract** — `0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9`
+- **Mainnet contract** — [`0xE950eb93aCa1f29848f5cBac61d78657e3c97287`](https://bscscan.com/token/0xE950eb93aCa1f29848f5cBac61d78657e3c97287) (source-verified on BscScan)
 - **Burnable** — yes; supply permanently decreases with every protocol settlement
 - **No staking. No yield. No farming. No inflation.**
 
@@ -141,5 +141,5 @@ This whitepaper is informational only. It is not an offer to sell securities, in
 ---
 
 *DevSwap Protocol · [devswap.pro](https://devswap.pro) · contact@devswap.pro*
-*Token contract (BSC mainnet): `0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9`*
+*Token contract (BSC mainnet): [`0xE950eb93aCa1f29848f5cBac61d78657e3c97287`](https://bscscan.com/token/0xE950eb93aCa1f29848f5cBac61d78657e3c97287)*
 *Escrow (BSC testnet): `0x22633bd98d6F9AD4dF499b77429459F5574B4dFe`*

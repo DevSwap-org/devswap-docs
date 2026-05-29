@@ -317,6 +317,40 @@ Optimizer `runs` raised **200 → 10,000** for high-frequency escrow runtime gas
 - [ ] Re-run Slither + Mythril on the new compiler output — pending next CI run (this commit triggers)
 - [ ] Re-verify on BscScan with the new compiler version — done on next testnet redeploy
 
+### 8.6 Formal Response — BscScan Mainnet Notice (2026-05-29)
+
+BscScan's contract page for `0xE950eb93aCa1f29848f5cBac61d78657e3c97287` displays an automated
+notice — *"The compiled contract might be susceptible to the Solidity Compiler Bugs below:
+`LostStorageArrayWriteOnSlotOverflow` (low-severity)"*. This is a **version-based generic notice**:
+BscScan flags every contract whose verified compiler is `< 0.8.32`, irrespective of source-level
+exposure to the bug pattern. The mainnet bytecode was compiled with `v0.8.24+commit.e11b9ed9` and
+verified on Etherscan V2 (chainid 56).
+
+**Position:** the contract is verifiably **not affected**. The bug requires a write to a dynamic
+storage array positioned across the 2^256 slot boundary. Per the §8.2 grep audit and OpenZeppelin
+v5 inheritance review, `DevSwapToken` declares **no dynamic storage arrays of any kind** — its
+state surface is exactly: `_owner` + `_pendingOwner` (`address`), `_cap` (`uint256`), `_balances`
+(`mapping`), `_allowances` (nested `mapping`). The trigger preconditions are structurally absent.
+
+**Address disambiguation** — three on-chain identities have been confused in past public
+materials and must not be confused going forward:
+
+| Address | Network | Contract | What it is |
+|---|---|---|---|
+| `0xE950eb93aCa1f29848f5cBac61d78657e3c97287` | mainnet (56) | `DevSwapToken` | ✅ The actual `$DSWP` token (`v0.8.24`, 5 M supply) |
+| `0xE950eb93aCa1f29848f5cBac61d78657e3c97287` | testnet (97) | `Test USDT` | Unrelated mock USDT — different bytecode, same address by deployment coincidence |
+| `0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9` | mainnet (56) | `LiquidityBootstrapPool` | Third-party Fjord Foundry LBP (cancelled — see §9.1). **Not** `$DSWP`. |
+
+**Forward path.** Two options, both compatible with the formal verdict above:
+
+1. **Leave deployed (current posture).** The notice is cosmetic; the contract is not exploitable.
+   This §8 is referenced from every public mention of the contract.
+2. **Redeploy under Solidity 0.8.34 alongside the V2.0 contract series** (`DevSwapToken_v2`).
+   Mints existing 5 M supply to a treasury multisig under a coordinated migration; old contract is
+   left in place. Triggers a fresh BscScan verify without the version-based notice. Scheduled with
+   the mainnet escrow launch, not as an isolated action — must follow the P5 `Multisig 3-of-5
+   (Gnosis Safe + Ledger HW)` gate.
+
 ---
 
 ## 9. Legal-Safety Controls (2026-05-26)

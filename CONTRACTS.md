@@ -123,4 +123,4 @@ Earlier escrow versions remain deployed on testnet for audit traceability:
 | `DevSwapEscrowV2_1` | `0x67Eca35d3d23401d53Fba988759F8A649BA67c3e` | Superseded |
 | `DevSwapEscrowV2_4` | `0xa1aF0da1494Db38924fC2055B9deA79B8b376F47` | Superseded by V2.6 |
 
-The mainnet `$DSWP` token contract is `0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9` (deployed for the future buyback-burn mechanism; no active offering — see [`whitepaper.md §5`](whitepaper.md)).
+The mainnet `$DSWP` token contract is [`0xE950eb93aCa1f29848f5cBac61d78657e3c97287`](https://bscscan.com/token/0xE950eb93aCa1f29848f5cBac61d78657e3c97287) — `DevSwapToken`, source-verified on BscScan. Deployed for the future buyback-burn mechanism; no active offering — see [`whitepaper.md §5`](whitepaper.md). The compiler used at deploy time (Solidity 0.8.24) triggers BscScan's generic `LostStorageArrayWriteOnSlotOverflow` notice; the contract is verifiably **not affected** because it declares no dynamic storage arrays — see [`SECURITY-AUDIT.md §8`](SECURITY-AUDIT.md). The monorepo source has since been pinned to Solidity 0.8.34 (superset of the upstream fix in 0.8.32).

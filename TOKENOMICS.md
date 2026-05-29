@@ -302,7 +302,7 @@ operator-side seeding first, then introduce the token.
 
 | Contract | Address |
 |---|---|
-| `$DSWP` token contract | `0x52a68C09f3237B4CB0944F58Ed1CA110a49bE1d9` |
+| `$DSWP` token contract (`DevSwapToken`) | [`0xE950eb93aCa1f29848f5cBac61d78657e3c97287`](https://bscscan.com/token/0xE950eb93aCa1f29848f5cBac61d78657e3c97287) |
 
 All contracts source-verified on BscScan.
 
