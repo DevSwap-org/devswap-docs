@@ -54,7 +54,7 @@ surrounding `try/catch`.
 
 ## Test coverage
 
-**400 + tests** across 19 Foundry suites: unit, fuzz @ 10 000 runs, invariant @ 16 384 calls, reentrancy, plus mainnet-fork tests against the real PancakeSwap router (auto-skip without `BSC_RPC_URL`). Escrow line coverage ≥ 95 %; function coverage 100 %. Slither: 0 high / 0 medium.
+**412 tests** across 20 Foundry suites: unit, fuzz @ 10 000 runs, invariant @ 16 384 calls, reentrancy, plus mainnet-fork tests against the real PancakeSwap router (auto-skip without `BSC_RPC_URL`). Escrow line coverage ≥ 95 %; function coverage 100 %. Slither: 0 high / 0 medium.
 
 ## Secrets policy
 

@@ -1,8 +1,10 @@
 # DevSwap Protocol — Documentation
 
-> A **Security-Hardened Protocol** for on-chain software-services settlement. Funds are locked in a
-> verified smart contract, released only on the client's explicit approval (or via deterministic
-> on-chain dispute and timeout rules). Non-custodial by design; no middleman, no platform escrow.
+> A **Security-Hardened Protocol** built for **Solidity developers, smart-contract auditors, and
+> Web3 builders** — with a parallel Arabic-language track for the MENA developer community. Funds
+> are locked in a verified smart contract on BNB Smart Chain, released only on the client's explicit
+> approval (or via deterministic on-chain dispute and timeout rules). Non-custodial by design;
+> no middleman, no platform escrow.
 
 - 📘 **Hosted docs:** **https://docs.devswap.pro** (rendered by GitBook from this repo)
 - 🌐 Application: **https://devswap.pro**
@@ -59,7 +61,7 @@ gated by the **seven Security Gates** documented below.
 | 1 | Symbolic execution (Mythril) — CI hard gate | Automated | ✅ wired |
 | 2 | Pattern analysis (Slither) — 0 high · 0 medium findings | Automated | ✅ green |
 | 3 | Test coverage — Escrow + Token 100% lines / statements / branches / functions | Automated | ✅ green |
-| 4 | Test suite — unit · fuzz @ 10,000 runs · invariant · mainnet-fork (400+ tests) | Automated | ✅ green |
+| 4 | Test suite — unit · fuzz @ 10,000 runs · invariant · mainnet-fork (412 tests across 20 suites) | Automated | ✅ green |
 | 5 | Independent third-party audit (e.g., PeckShield / CertiK) | Manual | ⏳ pending |
 | 6 | Multisig 3-of-5 (hardware wallets) + Zodiac timelock (48–72h) | Manual | ⏳ pending |
 | 7 | Qualified-counsel review of disclosure copy + jurisdiction posture | Manual | ⏳ pending |

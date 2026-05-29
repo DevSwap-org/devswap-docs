@@ -4,7 +4,7 @@
 - **Relates to:** the arbiter-hardening decision record ([`ADR-0003`](adr/ADR-0003-arbiter-hardening.md)), the non-custodial positioning decision record ([`ADR-0006`](adr/ADR-0006-non-custodial-positioning.md)), and the project's internal arbitration roadmap, incentive design, and tokenomics planning documents. Public-facing security posture: [`SECURITY-AUDIT.md`](SECURITY-AUDIT.md).
 - **Reserved ADRs:** the DAO governance architecture (ADR-0019) and Governor-contract parameters (ADR-0020) — drafted on ratification of this roadmap.
 
-> **Security Gates context.** Every phase below is conditional on the protocol-level Security Gates documented in [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md) — Mythril CI, Slither, ≥ 95 % test coverage, the 400+ test suite (automated, all green), independent third-party audit, multisig + timelock, and qualified-counsel review (manual, pending). G1 mainnet launch cannot proceed before Gates 5 – 7 close.
+> **Security Gates context.** Every phase below is conditional on the protocol-level Security Gates documented in [`SECURITY-AUDIT.md §1`](SECURITY-AUDIT.md) — Mythril CI, Slither, ≥ 95 % test coverage, the 412-test suite across 20 Foundry suites (automated, all green), independent third-party audit, multisig + timelock, and qualified-counsel review (manual, pending). G1 mainnet launch cannot proceed before Gates 5 – 7 close.
 
 ---
 

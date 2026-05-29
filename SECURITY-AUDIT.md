@@ -437,7 +437,7 @@ The internal change log entries that referenced a public offering, mint, or LP-l
 - Distribution row 1: "Seed LBP" → "Strategic Reserve" (amber-locked, "no active offering, pending mainnet gates").
 - Distribution row 2: "LP Liquidity / PinkLock 18mo" → "LP Liquidity (reserved), deploys only after audit + counsel sign-off".
 - Section heading + body replaced with a four-card layout:
-  * **Automated Gates** card (emerald, 4 / 4 green): Mythril CI, Slither, ≥ 95 % coverage, 400 + tests.
+  * **Automated Gates** card (emerald, 4 / 4 green): Mythril CI, Slither, ≥ 95 % coverage, 412 tests.
   * **Manual Gates** card (amber, 3 pending): independent audit, multisig 3-of-5 + Zodiac timelock, qualified-counsel review.
   * **Geo-Restrictions** card (red, live): US + OFAC (CU / IR / KP / SY / RU / BY), HTTP 451.
   * **Token-Disclosure Interstitial** card (blue, live): server-rendered, `bscscan.com` allow-list.
@@ -449,7 +449,7 @@ The internal change log entries that referenced a public offering, mint, or LP-l
 A new homepage section between the trust strip and the closing CTA:
 
 - Heading: "The path to mainnet is gated by audit, not by a token sale."
-- Four green gate tiles (Mythril, Slither, ≥ 95 % coverage, 400 + tests) — each enforced in CI on every commit to `main`.
+- Four green gate tiles (Mythril, Slither, ≥ 95 % coverage, 412 tests) — each enforced in CI on every commit to `main`.
 - One amber "Pending" panel listing the three manual gates (audit, multisig + timelock, counsel review).
 - Two live compliance cards: geo-block (HTTP 451) and the token-disclosure interstitial.
 - Outbound link to this `SECURITY-AUDIT.md` document.
@@ -617,8 +617,13 @@ of dispute proceeds to the supply-reduction mechanism.
 | `$DSWP` (testnet) | `0x2DD2Cd306f32cd6709d4316EF0df125235654734` |
 | Mock USDT (testnet) | `0xf24e2651A0A63EAf99A3dcE3F3Fb4ff997A8c3F7` |
 
-Test posture: **400 + tests** across 19 suites (unit, fuzz @ 10 k, invariant, reentrancy,
+Test posture: **412 tests** across 20 suites (unit, fuzz @ 10 k, invariant, reentrancy,
 mainnet-fork). Escrow line coverage ≥ 95 %; function coverage 100 %. Slither: 0 high / 0 medium.
 Mythril CI gate extended to analyze V2.6 explicitly (900 s timeout).
+
+**Live network status (BSC testnet, 2026-05-29):** `Escrow.owner()` held by the configured
+multisig-bound address; `Escrow.keeper()` set to the dedicated keeper wallet
+(`0xB0f66f47…`); `paused = false`; **`DevSwapArbiterPool.activeArbiterCount() = 12`**
+— above the `MIN_POOL_SIZE = 3` threshold; dispute panel draws are unblocked.
 
 Mainnet deployment remains conditional on the 7 Security Gates in §1.

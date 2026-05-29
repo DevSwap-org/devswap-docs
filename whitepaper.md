@@ -1,8 +1,8 @@
-# DevSwap Whitepaper — The On-Chain Protocol for Software-Services Settlement
+# DevSwap Whitepaper — The On-Chain Protocol for Solidity & Web3 Talent
 
 **Version:** V2.6 · **Date:** May 2026
 **Network:** BNB Smart Chain (BSC) · **Settlement:** USDT · **Utility Token:** `$DSWP`
-**Status:** Testnet — mainnet gated by independent audit, multisig, and timelock
+**Status:** Testnet (live arbiter pool, dispute panel ready) — mainnet gated by independent audit, multisig, and timelock
 
 ---
 
@@ -14,7 +14,7 @@ This document is provided for technical and informational purposes only. It is n
 
 ## 1. Executive Summary
 
-DevSwap is a non-custodial, peer-to-peer marketplace for software-development services on BNB Smart Chain. It replaces platform-controlled custody, opaque fees, and centralized dispute resolution with transparent smart contracts, stable USDT settlement, and verifiable on-chain reputation.
+DevSwap is a non-custodial, peer-to-peer marketplace **built for Solidity developers, smart-contract auditors, and Web3 builders** on BNB Smart Chain. It replaces platform-controlled custody, opaque fees, and centralized dispute resolution with transparent smart contracts, stable USDT settlement, and verifiable on-chain reputation. A parallel Arabic-language track makes the same primitives available to the MENA developer community in RTL with a hand-translated UI.
 
 **Core thesis:** users should not need to trust a marketplace more — they should be able to verify more.
 
@@ -111,7 +111,7 @@ On every released milestone, 1.5 % of USDT is routed to PancakeSwap V2 to purcha
 |-------|--------|
 | Language | Solidity 0.8.34, EVM target: shanghai |
 | Libraries | OpenZeppelin v5 (vendored) |
-| Tests | 400 + (unit · fuzz @ 10k · invariant · reentrancy · mainnet-fork) |
+| Tests | 412 (20 suites · unit · fuzz @ 10 k · invariant · reentrancy · mainnet-fork) |
 | Coverage | Escrow ≥ 95 % lines; functions 100 % |
 | Static analysis | Slither: 0 high / 0 medium |
 | **Audit gate** | **Independent audit required before mainnet** |
@@ -125,9 +125,9 @@ A live, dateless roadmap (Past · Now · Next) is published at [`ROADMAP.md`](./
 
 | Phase | Status | Milestone |
 |-------|--------|-----------|
-| P1 — Contracts | ✅ Done | V2.6 · 400 + tests · ≥ 95 % cov · Slither clean |
+| P1 — Contracts | ✅ Done | V2.6 · 412 tests · ≥ 95 % cov · Slither clean |
 | P2 — Frontend | ✅ Done | Next.js 14 · en / ar RTL · full lifecycle flows |
-| P3 — Disputes + Index | ✅ Done | Staked arbiter pool · subgraph live |
+| P3 — Disputes + Index | ✅ Done | Staked arbiter pool (12 active arbiters live) · keeper service running · subgraph live |
 | P4 — Economy | Deferred | Public offering path withdrawn pending audit + counsel; buyback-burn live |
 | P5 — Mainnet | Gated | Audit + multisig + counsel + niche launch |
 | P6 — Governance | Planned | `ERC20Votes` → `GovernorDevSwap` → `TimelockController` |

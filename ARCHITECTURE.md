@@ -1,6 +1,6 @@
 # Architecture
 
-DevSwap is a non-custodial peer-to-peer marketplace for software services on **BNB Smart Chain (BSC)**, settled in **USDT** escrow, with a protocol utility token **`$DSWP`** reduced via a separated **buyback-and-burn** mechanism.
+DevSwap is a non-custodial peer-to-peer marketplace **built for Solidity developers, smart-contract auditors, and Web3 builders** on **BNB Smart Chain (BSC)**, settled in **USDT** escrow, with a protocol utility token **`$DSWP`** reduced via a separated **buyback-and-burn** mechanism. A parallel Arabic-language track serves the MENA developer community.
 
 > For source-of-truth order on contract behaviour, see the verified contracts in [`devswap-contracts`](https://github.com/DevSwap-org/devswap-contracts) — the bytecode is the canonical reference; this document is descriptive.
 
